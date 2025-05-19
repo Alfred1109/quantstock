@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>交易控制面板 - 量化交易系统</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
+    <style>
+        .trading-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        
+        .trading-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .trading-subtitle {
+            opacity: 0.9;
+            font-weight: 400;
+        }
+        
+        .status-badge {
+            padding: 8px 15px;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .status-badge i {
+            font-size: 1.2rem;
+        }
+        
+        .status-badge.active {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .status-badge.inactive {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .trading-card {
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .trading-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .trading-card::after {
+            content: "";
+            position: absolute;
+            top: -30px;
+            right: -30px;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, transparent, rgba(var(--primary-color-rgb), 0.1));
+            z-index: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .trading-card:hover::after {
+            transform: scale(1.5);
+        }
+        
+        .trading-card-header {
+            background-color: rgba(var(--primary-color-rgb), 0.05);
+            font-weight: 600;
+            padding: 1.2rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .trading-card-header i {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            opacity: 0.7;
+        }
+        
+        .trading-card-body {
+            padding: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-control {
+            position: relative;
+            overflow: hidden;
+            width: 120px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .btn-start {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .btn-start:hover {
+            background-color: var(--success);
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+        }
+        
+        .btn-stop {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .btn-stop:hover {
+            background-color: var(--danger);
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+        }
+        
+        .system-info {
+            margin-top: 1.5rem;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            color: var(--text-medium);
+            font-weight: 500;
+        }
+        
+        .info-value {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        
+        .position-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        
+        .position-table th {
+            font-weight: 600;
+            color: var(--text-medium);
+            padding: 12px 15px;
+            text-align: left;
+            background-color: rgba(var(--primary-color-rgb), 0.05);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .position-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+        
+        .position-table tbody tr {
+            transition: all 0.2s ease;
+        }
+        
+        .position-table tbody tr:hover {
+            background-color: rgba(var(--primary-color-rgb), 0.02);
+        }
+        
+        .position-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .profit {
+            color: var(--success);
+            font-weight: 600;
+        }
+        
+        .loss {
+            color: var(--danger);
+            font-weight: 600;
+        }
+        
+        .signal-item {
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            background-color: white;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            transition: all 0.3s ease;
+            border-left: 5px solid transparent;
+        }
+        
+        .signal-item:hover {
+            transform: translateX(5px);
+            box-shadow: var(--shadow);
+        }
+        
+        .signal-buy {
+            border-left-color: var(--success);
+        }
+        
+        .signal-sell {
+            border-left-color: var(--danger);
+        }
+        
+        .signal-time {
+            color: var(--text-medium);
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+        
+        .signal-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .signal-buy .signal-title {
+            color: var(--success);
+        }
+        
+        .signal-sell .signal-title {
+            color: var(--danger);
+        }
+        
+        .signal-detail {
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .signal-status {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background-color: var(--success);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    {% include 'navbar.html' %}
+
+    <div class="container my-4">
+        <!-- 现代化标题区域，统一与其他页面风格 -->
+        <div class="market-header bg-primary text-white p-4 mb-4 rounded">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="market-title mb-2">交易控制面板</h2>
+                        <p class="market-subtitle mb-0">管理您的交易策略和实时交易操作</p>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <div class="status-badge" id="system-status-badge">
+                            <i class="bi bi-circle-fill"></i>
+                            <span id="system-status-text">系统状态</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <!-- 系统状态和控制 -->
+            <div class="col-md-4">
+                <div class="trading-card">
+                    <div class="trading-card-header">
+                        <span>系统状态</span>
+                        <i class="bi bi-activity"></i>
+                    </div>
+                    <div class="trading-card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                                <div id="trading-status" class="status-badge active">
+                                    <i class="bi bi-play-circle-fill"></i>
+                                    <span>运行中</span>
+                                </div>
+                            </div>
+                            <div class="control-buttons">
+                                <button class="btn btn-start" id="start-trading">
+                                    <i class="bi bi-play-fill"></i> 启动
+                                </button>
+                                <button class="btn btn-stop" id="stop-trading">
+                                    <i class="bi bi-stop-fill"></i> 停止
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="system-info">
+                            <div class="info-row">
+                                <div class="info-label">最后信号时间</div>
+                                <div class="info-value" id="last-signal-time">2023-05-18 14:30:25</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">活跃订单数</div>
+                                <div class="info-value" id="active-orders">0</div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">系统时间</div>
+                                <div class="info-value" id="system-time">2023-05-18 14:35:00</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 当前持仓 -->
+            <div class="col-md-4">
+                <div class="trading-card">
+                    <div class="trading-card-header">
+                        <span>当前持仓</span>
+                        <i class="bi bi-briefcase"></i>
+                    </div>
+                    <div class="trading-card-body">
+                        <div id="positions-container">
+                            <div class="alert alert-info">加载持仓信息...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 最近信号 -->
+            <div class="col-md-4">
+                <div class="trading-card">
+                    <div class="trading-card-header">
+                        <span>最近信号</span>
+                        <i class="bi bi-bell"></i>
+                    </div>
+                    <div class="trading-card-body">
+                        <div id="signals-container">
+                            <div class="alert alert-info">加载信号信息...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载完成后执行
+        $(document).ready(function() {
+            // 获取系统状态
+            refreshSystemStatus();
+            
+            // 获取持仓信息
+            refreshPositions();
+            
+            // 获取信号信息
+            refreshSignals();
+            
+            // 设置定时刷新
+            setInterval(refreshSystemStatus, 5000);
+            setInterval(refreshPositions, 10000);
+            setInterval(refreshSignals, 10000);
+            
+            // 启动交易系统
+            $("#start-trading").click(function() {
+                $(this).addClass('disabled').html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 启动中...');
+                
+                $.ajax({
+                    url: '/api/trading/start',
+                    type: 'POST',
+                    success: function(response) {
+                        showToast('交易系统已启动', 'success');
+                        refreshSystemStatus();
+                        $("#start-trading").removeClass('disabled').html('<i class="bi bi-play-fill"></i> 启动');
+                    },
+                    error: function() {
+                        showToast('启动失败，请查看日志', 'danger');
+                        $("#start-trading").removeClass('disabled').html('<i class="bi bi-play-fill"></i> 启动');
+                    }
+                });
+            });
+            
+            // 停止交易系统
+            $("#stop-trading").click(function() {
+                $(this).addClass('disabled').html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 停止中...');
+                
+                $.ajax({
+                    url: '/api/trading/stop',
+                    type: 'POST',
+                    success: function(response) {
+                        showToast('交易系统已停止', 'warning');
+                        refreshSystemStatus();
+                        $("#stop-trading").removeClass('disabled').html('<i class="bi bi-stop-fill"></i> 停止');
+                    },
+                    error: function() {
+                        showToast('停止失败，请查看日志', 'danger');
+                        $("#stop-trading").removeClass('disabled').html('<i class="bi bi-stop-fill"></i> 停止');
+                    }
+                });
+            });
+        });
+        
+        // 显示消息提示
+        function showToast(message, type) {
+            // 如果没有toast容器，创建一个
+            if ($('#toast-container').length === 0) {
+                $('body').append('<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>');
+            }
+            
+            // 创建随机ID
+            const id = 'toast-' + Math.random().toString(36).substr(2, 9);
+            
+            // 创建toast元素
+            const toast = `
+            <div id="${id}" class="toast align-items-center text-white bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+            `;
+            
+            // 添加到容器
+            $('#toast-container').append(toast);
+            
+            // 初始化并显示toast
+            const toastElement = new bootstrap.Toast(document.getElementById(id), {
+                delay: 3000
+            });
+            toastElement.show();
+        }
+        
+        // 刷新系统状态
+        function refreshSystemStatus() {
+            $.ajax({
+                url: '/api/trading/status',
+                type: 'GET',
+                success: function(response) {
+                    if(response.is_active) {
+                        $("#trading-status").html('<i class="bi bi-play-circle-fill"></i> <span>运行中</span>')
+                            .removeClass("inactive").addClass("active");
+                    } else {
+                        $("#trading-status").html('<i class="bi bi-stop-circle-fill"></i> <span>已停止</span>')
+                            .removeClass("active").addClass("inactive");
+                    }
+                    
+                    $("#last-signal-time").text(response.last_signal_time);
+                    $("#active-orders").text(response.active_orders);
+                    $("#system-time").text(response.time);
+                }
+            });
+        }
+        
+        // 刷新持仓信息
+        function refreshPositions() {
+            $.ajax({
+                url: '/api/trading/positions',
+                type: 'GET',
+                success: function(response) {
+                    var html = '';
+                    
+                    if(response.positions.length === 0) {
+                        html = '<div class="alert alert-warning">当前无持仓</div>';
+                    } else {
+                        html = '<table class="position-table">';
+                        html += '<thead><tr><th>股票</th><th>数量</th><th>成本</th><th>现价</th><th>盈亏</th></tr></thead>';
+                        html += '<tbody>';
+                        
+                        response.positions.forEach(function(position) {
+                            // 判断是盈利还是亏损
+                            const profitClass = position.profit_loss.includes('-') ? 'loss' : 'profit';
+                            
+                            html += '<tr>';
+                            html += '<td><strong>' + position.symbol + '</strong></td>';
+                            html += '<td>' + position.quantity + '</td>';
+                            html += '<td>' + position.entry_price + '</td>';
+                            html += '<td>' + position.current_price + '</td>';
+                            html += '<td class="' + profitClass + '">' + position.profit_loss + '</td>';
+                            html += '</tr>';
+                        });
+                        
+                        html += '</tbody></table>';
+                    }
+                    
+                    $("#positions-container").html(html);
+                }
+            });
+        }
+        
+        // 刷新信号信息
+        function refreshSignals() {
+            $.ajax({
+                url: '/api/trading/signals',
+                type: 'GET',
+                success: function(response) {
+                    var html = '';
+                    
+                    if(response.signals.length === 0) {
+                        html = '<div class="alert alert-warning">暂无交易信号</div>';
+                    } else {
+                        response.signals.forEach(function(signal) {
+                            var signalClass = signal.action === 'BUY' ? 'signal-buy' : 'signal-sell';
+                            var actionIcon = signal.action === 'BUY' ? '<i class="bi bi-arrow-up-circle-fill"></i>' : '<i class="bi bi-arrow-down-circle-fill"></i>';
+                            var actionText = signal.action === 'BUY' ? '买入' : '卖出';
+                            
+                            html += '<div class="signal-item ' + signalClass + '" data-aos="fade-left">';
+                            html += '<div class="signal-time">' + signal.time + '</div>';
+                            html += '<div class="signal-title">' + actionIcon + ' ' + signal.symbol + ' - ' + actionText + '</div>';
+                            html += '<div class="signal-detail">价格: ' + signal.price + '</div>';
+                            html += '<div class="signal-detail">原因: ' + signal.reason + '</div>';
+                            html += '<div class="mt-2">';
+                            html += '<span class="signal-status">' + (signal.executed ? '已执行' : '待执行') + '</span>';
+                            html += '</div>';
+                            html += '</div>';
+                        });
+                    }
+                    
+                    $("#signals-container").html(html);
+                }
+            });
+        }
+    </script>
+    
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4 mb-lg-0">
+                    <a href="/" class="footer-logo">量化交易系统</a>
+                    <p class="footer-description">
+                        专业的个人量化交易平台，提供智能策略构建、自动化执行和实时监控，帮助您实现交易自动化和资产增值。
+                    </p>
+                    <div class="social-icons">
+                        <a href="#"><i class="bi bi-github"></i></a>
+                        <a href="#"><i class="bi bi-twitter"></i></a>
+                        <a href="#"><i class="bi bi-linkedin"></i></a>
+                        <a href="#"><i class="bi bi-envelope"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6 mb-4 mb-md-0">
+                    <h5>功能导航</h5>
+                    <ul class="footer-links">
+                        <li><a href="/">首页</a></li>
+                        <li><a href="/market">市场概览</a></li>
+                        <li><a href="/watchlist">自选股</a></li>
+                        <li><a href="/backtest">策略回测</a></li>
+                        <li><a href="/trading">交易控制</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6 mb-4 mb-md-0">
+                    <h5>开发资源</h5>
+                    <ul class="footer-links">
+                        <li><a href="#">API文档</a></li>
+                        <li><a href="#">策略示例</a></li>
+                        <li><a href="#">开发指南</a></li>
+                        <li><a href="#">版本历史</a></li>
+                        <li><a href="#">常见问题</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 col-md-4">
+                    <h5>联系我们</h5>
+                    <ul class="footer-links">
+                        <li><i class="bi bi-envelope-fill me-2"></i> support@quant-trading.com</li>
+                        <li><i class="bi bi-telephone-fill me-2"></i> (021) 5678-9000</li>
+                        <li><i class="bi bi-geo-alt-fill me-2"></i> 上海市浦东新区张江高科技园区</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2023-2025 量化交易系统 | 版本 1.2.5 | 所有权利保留</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html> 

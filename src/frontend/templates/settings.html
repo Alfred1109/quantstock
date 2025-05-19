@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统设置 - 量化交易系统</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body>
+    {% include 'navbar.html' %}
+
+    <div class="container my-4">
+        <!-- 现代化标题区域 -->
+        <div class="settings-header bg-primary text-white p-4 mb-4 rounded">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="settings-title mb-2">系统设置</h2>
+                        <p class="settings-subtitle mb-0">自定义系统参数，优化使用体验</p>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <button type="button" class="btn btn-light" id="export-settings">
+                            <i class="bi bi-download me-1"></i> 导出设置
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-3">
+                <div class="trading-card mb-4">
+                    <div class="trading-card-header">
+                        <span>设置菜单</span>
+                        <i class="bi bi-list"></i>
+                    </div>
+                    <div class="trading-card-body p-0">
+                        <div class="list-group list-group-flush border-0">
+                            <a href="#general-settings" class="list-group-item list-group-item-action active border-0 px-3 py-3" data-bs-toggle="tab">
+                                <i class="bi bi-gear me-2"></i> 基本设置
+                            </a>
+                            <a href="#api-settings" class="list-group-item list-group-item-action border-0 px-3 py-3" data-bs-toggle="tab">
+                                <i class="bi bi-code-slash me-2"></i> API 配置
+                            </a>
+                            <a href="#data-settings" class="list-group-item list-group-item-action border-0 px-3 py-3" data-bs-toggle="tab">
+                                <i class="bi bi-database me-2"></i> 数据源设置
+                            </a>
+                            <a href="#llm-settings" class="list-group-item list-group-item-action border-0 px-3 py-3" data-bs-toggle="tab">
+                                <i class="bi bi-robot me-2"></i> LLM 设置
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-9">
+                <div class="trading-card">
+                    <div class="trading-card-header">
+                        <span>配置详情</span>
+                        <i class="bi bi-sliders"></i>
+                    </div>
+                    <div class="trading-card-body">
+                        <div class="tab-content">
+                            <!-- 基本设置 -->
+                            <div class="tab-pane fade show active" id="general-settings">
+                                <form id="general-settings-form">
+                                    <div class="mb-3">
+                                        <label for="system-name" class="form-label">系统名称</label>
+                                        <input type="text" class="form-control" id="system-name" value="量化交易系统">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="theme-select" class="form-label">主题样式</label>
+                                        <select class="form-select" id="theme-select">
+                                            <option value="light">浅色</option>
+                                            <option value="dark">深色</option>
+                                            <option value="auto">跟随系统</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="log-level" class="form-label">日志级别</label>
+                                        <select class="form-select" id="log-level">
+                                            <option value="debug">Debug</option>
+                                            <option value="info" selected>Info</option>
+                                            <option value="warning">Warning</option>
+                                            <option value="error">Error</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3 form-check">
+                                        <input type="checkbox" class="form-check-input" id="enable-notifications" checked>
+                                        <label class="form-check-label" for="enable-notifications">启用系统通知</label>
+                                    </div>
+                                    <button type="button" class="btn btn-primary" id="save-general-settings">
+                                        <i class="bi bi-save me-1"></i> 保存设置
+                                    </button>
+                                </form>
+                            </div>
+                            
+                            <!-- API设置 -->
+                            <div class="tab-pane fade" id="api-settings">
+                                <form id="api-settings-form">
+                                    <div class="mb-3">
+                                        <label for="api-base-url" class="form-label">API 基础 URL</label>
+                                        <input type="text" class="form-control" id="api-base-url" value="http://localhost:5000/api">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="api-key" class="form-label">API 密钥</label>
+                                        <input type="password" class="form-control" id="api-key" placeholder="输入 API 密钥">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="api-timeout" class="form-label">超时设置（秒）</label>
+                                        <input type="number" class="form-control" id="api-timeout" value="30">
+                                    </div>
+                                    <div class="mb-3 form-check">
+                                        <input type="checkbox" class="form-check-input" id="enable-api-cache" checked>
+                                        <label class="form-check-label" for="enable-api-cache">启用 API 缓存</label>
+                                    </div>
+                                    <button type="button" class="btn btn-primary" id="save-api-settings">
+                                        <i class="bi bi-save me-1"></i> 保存设置
+                                    </button>
+                                </form>
+                            </div>
+                            
+                            <!-- 数据源设置 -->
+                            <div class="tab-pane fade" id="data-settings">
+                                <form id="data-settings-form">
+                                    <div class="mb-4">
+                                        <label class="form-label">选择数据源</label>
+                                        <div class="p-3 rounded mb-2 hover-lift" style="background-color: rgba(var(--primary-color-rgb), 0.05);">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="data-source" id="data-source-simulated" checked>
+                                                <label class="form-check-label" for="data-source-simulated">
+                                                    <div class="fw-bold">模拟数据</div>
+                                                    <small class="text-muted">用于测试和开发环境</small>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="p-3 rounded hover-lift" style="background-color: rgba(var(--primary-color-rgb), 0.05);">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="data-source" id="data-source-akshare">
+                                                <label class="form-check-label" for="data-source-akshare">
+                                                    <div class="fw-bold">AKShare</div>
+                                                    <small class="text-muted">使用AKShare提供的实时行情数据</small>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="data-cache-dir" class="form-label">数据缓存目录</label>
+                                        <input type="text" class="form-control" id="data-cache-dir" value="./output/cache">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="data-max-cache-age" class="form-label">最大缓存时间（小时）</label>
+                                        <input type="number" class="form-control" id="data-max-cache-age" value="24">
+                                    </div>
+                                    <button type="button" class="btn btn-primary" id="save-data-settings">
+                                        <i class="bi bi-save me-1"></i> 保存设置
+                                    </button>
+                                </form>
+                            </div>
+                            
+                            <!-- LLM设置 -->
+                            <div class="tab-pane fade" id="llm-settings">
+                                <form id="llm-settings-form">
+                                    <div class="mb-4">
+                                        <label class="form-label">选择LLM服务</label>
+                                        <div class="p-3 rounded mb-2 hover-lift" style="background-color: rgba(var(--primary-color-rgb), 0.05);">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="llm-service" id="llm-service-simulated" checked>
+                                                <label class="form-check-label" for="llm-service-simulated">
+                                                    <div class="fw-bold">模拟LLM</div>
+                                                    <small class="text-muted">用于测试和开发环境</small>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="p-3 rounded hover-lift" style="background-color: rgba(var(--primary-color-rgb), 0.05);">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="llm-service" id="llm-service-deepseek">
+                                                <label class="form-check-label" for="llm-service-deepseek">
+                                                    <div class="fw-bold">DeepSeek</div>
+                                                    <small class="text-muted">使用DeepSeek大模型服务</small>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="llm-api-key" class="form-label">API 密钥</label>
+                                        <input type="password" class="form-control" id="llm-api-key" placeholder="输入 LLM API 密钥">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="llm-model" class="form-label">模型名称</label>
+                                        <input type="text" class="form-control" id="llm-model" value="deepseek-v3-250324">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="llm-base-url" class="form-label">API 地址</label>
+                                        <input type="text" class="form-control" id="llm-base-url" value="https://ark.cn-beijing.volces.com/api/v3">
+                                    </div>
+                                    <div class="mb-3 form-check">
+                                        <input type="checkbox" class="form-check-input" id="use-openai-client" checked>
+                                        <label class="form-check-label" for="use-openai-client">使用 OpenAI 客户端</label>
+                                    </div>
+                                    <button type="button" class="btn btn-primary" id="save-llm-settings">
+                                        <i class="bi bi-save me-1"></i> 保存设置
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 成功提示 Toast -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+        <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-check-circle me-2"></i>
+                    <span id="toast-message">设置已保存</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 从本地存储加载设置
+            loadSettingsFromStorage();
+            
+            // 保存按钮事件处理
+            document.getElementById('save-general-settings').addEventListener('click', function() {
+                saveGeneralSettings();
+                showToast('基本设置已保存');
+            });
+            
+            document.getElementById('save-api-settings').addEventListener('click', function() {
+                saveApiSettings();
+                showToast('API设置已保存');
+            });
+            
+            document.getElementById('save-data-settings').addEventListener('click', function() {
+                saveDataSettings();
+                showToast('数据源设置已保存');
+            });
+            
+            document.getElementById('save-llm-settings').addEventListener('click', function() {
+                saveLlmSettings();
+                showToast('LLM设置已保存');
+            });
+            
+            // 导出设置
+            document.getElementById('export-settings').addEventListener('click', function() {
+                exportSettings();
+            });
+        });
+        
+        // 从本地存储加载设置
+        function loadSettingsFromStorage() {
+            // 通用设置
+            const generalSettings = JSON.parse(localStorage.getItem('generalSettings') || '{}');
+            if (generalSettings.systemName) document.getElementById('system-name').value = generalSettings.systemName;
+            if (generalSettings.theme) document.getElementById('theme-select').value = generalSettings.theme;
+            if (generalSettings.logLevel) document.getElementById('log-level').value = generalSettings.logLevel;
+            if (generalSettings.enableNotifications !== undefined) {
+                document.getElementById('enable-notifications').checked = generalSettings.enableNotifications;
+            }
+            
+            // API设置
+            const apiSettings = JSON.parse(localStorage.getItem('apiSettings') || '{}');
+            if (apiSettings.baseUrl) document.getElementById('api-base-url').value = apiSettings.baseUrl;
+            if (apiSettings.apiKey) document.getElementById('api-key').value = apiSettings.apiKey;
+            if (apiSettings.timeout) document.getElementById('api-timeout').value = apiSettings.timeout;
+            if (apiSettings.enableCache !== undefined) {
+                document.getElementById('enable-api-cache').checked = apiSettings.enableCache;
+            }
+            
+            // 数据源设置
+            const dataSettings = JSON.parse(localStorage.getItem('dataSettings') || '{}');
+            if (dataSettings.dataSource) {
+                document.getElementById('data-source-' + dataSettings.dataSource).checked = true;
+            }
+            if (dataSettings.cacheDir) document.getElementById('data-cache-dir').value = dataSettings.cacheDir;
+            if (dataSettings.maxCacheAge) document.getElementById('data-max-cache-age').value = dataSettings.maxCacheAge;
+            
+            // LLM设置
+            const llmSettings = JSON.parse(localStorage.getItem('llmSettings') || '{}');
+            if (llmSettings.service) {
+                document.getElementById('llm-service-' + llmSettings.service).checked = true;
+            }
+            if (llmSettings.apiKey) document.getElementById('llm-api-key').value = llmSettings.apiKey;
+            if (llmSettings.model) document.getElementById('llm-model').value = llmSettings.model;
+            if (llmSettings.baseUrl) document.getElementById('llm-base-url').value = llmSettings.baseUrl;
+            if (llmSettings.useOpenAIClient !== undefined) {
+                document.getElementById('use-openai-client').checked = llmSettings.useOpenAIClient;
+            }
+        }
+        
+        // 保存通用设置
+        function saveGeneralSettings() {
+            const generalSettings = {
+                systemName: document.getElementById('system-name').value,
+                theme: document.getElementById('theme-select').value,
+                logLevel: document.getElementById('log-level').value,
+                enableNotifications: document.getElementById('enable-notifications').checked
+            };
+            localStorage.setItem('generalSettings', JSON.stringify(generalSettings));
+        }
+        
+        // 保存API设置
+        function saveApiSettings() {
+            const apiSettings = {
+                baseUrl: document.getElementById('api-base-url').value,
+                apiKey: document.getElementById('api-key').value,
+                timeout: document.getElementById('api-timeout').value,
+                enableCache: document.getElementById('enable-api-cache').checked
+            };
+            localStorage.setItem('apiSettings', JSON.stringify(apiSettings));
+        }
+        
+        // 保存数据源设置
+        function saveDataSettings() {
+            const dataSource = document.getElementById('data-source-simulated').checked ? 'simulated' : 'akshare';
+            const dataSettings = {
+                dataSource: dataSource,
+                cacheDir: document.getElementById('data-cache-dir').value,
+                maxCacheAge: document.getElementById('data-max-cache-age').value
+            };
+            localStorage.setItem('dataSettings', JSON.stringify(dataSettings));
+        }
+        
+        // 保存LLM设置
+        function saveLlmSettings() {
+            const service = document.getElementById('llm-service-simulated').checked ? 'simulated' : 'deepseek';
+            const llmSettings = {
+                service: service,
+                apiKey: document.getElementById('llm-api-key').value,
+                model: document.getElementById('llm-model').value,
+                baseUrl: document.getElementById('llm-base-url').value,
+                useOpenAIClient: document.getElementById('use-openai-client').checked
+            };
+            localStorage.setItem('llmSettings', JSON.stringify(llmSettings));
+        }
+        
+        // 导出设置
+        function exportSettings() {
+            const settings = {
+                general: JSON.parse(localStorage.getItem('generalSettings') || '{}'),
+                api: JSON.parse(localStorage.getItem('apiSettings') || '{}'),
+                data: JSON.parse(localStorage.getItem('dataSettings') || '{}'),
+                llm: JSON.parse(localStorage.getItem('llmSettings') || '{}')
+            };
+            
+            const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'quant_system_settings.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast('设置已导出');
+        }
+        
+        // 显示Toast提示
+        function showToast(message, type = 'success') {
+            // 更新Toast内容和样式
+            const toast = document.getElementById('successToast');
+            const toastMessage = document.getElementById('toast-message');
+            
+            // 清除原有样式
+            toast.classList.remove('bg-success', 'bg-danger', 'bg-warning');
+            
+            // 添加新样式
+            if (type === 'success') {
+                toast.classList.add('bg-success');
+            } else if (type === 'danger') {
+                toast.classList.add('bg-danger');
+            } else if (type === 'warning') {
+                toast.classList.add('bg-warning', 'text-dark');
+            }
+            
+            // 设置消息内容
+            toastMessage.textContent = message;
+            
+            // 显示Toast
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+        }
+    </script>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4 mb-lg-0">
+                    <a href="/" class="footer-logo">量化交易系统</a>
+                    <p class="footer-description">
+                        专业的个人量化交易平台，提供智能策略构建、自动化执行和实时监控，帮助您实现交易自动化和资产增值。
+                    </p>
+                    <div class="social-icons">
+                        <a href="#"><i class="bi bi-github"></i></a>
+                        <a href="#"><i class="bi bi-twitter"></i></a>
+                        <a href="#"><i class="bi bi-linkedin"></i></a>
+                        <a href="#"><i class="bi bi-envelope"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6 mb-4 mb-md-0">
+                    <h5>功能导航</h5>
+                    <ul class="footer-links">
+                        <li><a href="/">首页</a></li>
+                        <li><a href="/market">市场概览</a></li>
+                        <li><a href="/watchlist">自选股</a></li>
+                        <li><a href="/backtest">策略回测</a></li>
+                        <li><a href="/trading">交易控制</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6 mb-4 mb-md-0">
+                    <h5>开发资源</h5>
+                    <ul class="footer-links">
+                        <li><a href="#">API文档</a></li>
+                        <li><a href="#">策略示例</a></li>
+                        <li><a href="#">开发指南</a></li>
+                        <li><a href="#">版本历史</a></li>
+                        <li><a href="#">常见问题</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 col-md-4">
+                    <h5>联系我们</h5>
+                    <ul class="footer-links">
+                        <li><i class="bi bi-envelope-fill me-2"></i> support@quant-trading.com</li>
+                        <li><i class="bi bi-telephone-fill me-2"></i> (021) 5678-9000</li>
+                        <li><i class="bi bi-geo-alt-fill me-2"></i> 上海市浦东新区张江高科技园区</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2023-2025 量化交易系统 | 版本 1.2.5 | 所有权利保留</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html> 

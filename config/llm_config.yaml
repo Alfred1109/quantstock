@@ -1,0 +1,27 @@
+# LLM API Configuration
+
+# 使用哪种LLM客户端：deepseek 或 simulated
+client_type: "deepseek"  # 已验证可正常使用DeepSeek API
+
+# DeepSeek on VolcEngine
+deepseek_settings:
+  # API Key should be loaded from environment variable
+  api_key_env_var: "DEEPSEEK_API_KEY"
+  api_key: ""  # 从环境变量加载，不需要硬编码
+  model_name: "deepseek-v3-250324"
+  # API接口文档：https://console.volcengine.com/ark/region:ark+cn-beijing/endpoint/detail?Id=ep-m-20250331153858-fmfsr&Tab=api&Type=preset
+  base_url: "https://ark.cn-beijing.volces.com/api/v3"  # Changed to volces.com based on official example
+  # 其他参数
+  temperature: 0.7
+  max_tokens: 2048
+  use_openai_client: true  # 使用OpenAI客户端库
+
+# 模拟LLM配置
+simulated_settings:
+  # 可以添加模拟响应配置
+  use_predefined_patterns: true  # 使用预定义的模式来模拟分析
+
+# Example for OpenAI (if you plan to support it later)
+# openai:
+#   api_key_env_var: "OPENAI_API_KEY"
+#   model_name: "gpt-4" 

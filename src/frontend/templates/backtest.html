@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>策略回测 - 量化交易系统</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    {% include 'navbar.html' %}
+
+    <div class="container my-4">
+        <!-- 现代化标题区域 -->
+        <div class="backtest-header bg-primary text-white p-4 mb-4 rounded">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="backtest-title mb-2">策略回测</h2>
+                        <p class="backtest-subtitle mb-0">测试并优化您的交易策略，量化分析绩效表现</p>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <button type="button" class="btn btn-light" id="export-report" disabled>
+                            <i class="bi bi-file-earmark-arrow-down me-1"></i> 导出报告
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <!-- 左侧参数设置 -->
+                <div class="trading-card">
+                    <div class="trading-card-header">
+                        <span>回测参数</span>
+                        <i class="bi bi-sliders"></i>
+                    </div>
+                    <div class="trading-card-body">
+                        <form id="backtest-form">
+                            <div class="mb-3">
+                                <label for="strategy-select" class="form-label text-muted">交易策略</label>
+                                <select class="form-select" id="strategy-select">
+                                    <option value="pyramid_llm">金字塔 LLM 策略</option>
+                                    <option value="momentum">动量突破策略</option>
+                                    <option value="macd">MACD 交叉策略</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="symbol-input" class="form-label text-muted">交易品种</label>
+                                <input type="text" class="form-control" id="symbol-input" placeholder="例如: 000001.SH" value="000001.SH">
+                            </div>
+                            <div class="mb-3">
+                                <label for="start-date" class="form-label text-muted">开始日期</label>
+                                <input type="date" class="form-control" id="start-date" value="2022-01-01">
+                            </div>
+                            <div class="mb-3">
+                                <label for="end-date" class="form-label text-muted">结束日期</label>
+                                <input type="date" class="form-control" id="end-date" value="2022-12-31">
+                            </div>
+                            <div class="mb-3">
+                                <label for="initial-capital" class="form-label text-muted">初始资金</label>
+                                <input type="number" class="form-control" id="initial-capital" value="1000000">
+                            </div>
+                            <div class="mb-3">
+                                <label for="commission-rate" class="form-label text-muted">佣金率 (%)</label>
+                                <input type="number" class="form-control" id="commission-rate" step="0.01" value="0.05">
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="use-llm" checked>
+                                <label class="form-check-label" for="use-llm">使用 LLM 增强</label>
+                            </div>
+                            <div class="d-grid mt-4">
+                                <button type="button" class="btn btn-primary" id="run-backtest">
+                                    <i class="bi bi-play-fill me-1"></i> 开始回测
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-8">
+                <!-- 右侧结果区域 -->
+                <div class="trading-card h-100">
+                    <div class="trading-card-header">
+                        <span>回测结果</span>
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                    <div class="trading-card-body">
+                        <div id="backtest-results" style="display: none;">
+                            <ul class="nav nav-tabs mb-4" id="resultsTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="performance-tab" data-bs-toggle="tab" data-bs-target="#performance" type="button" role="tab">
+                                        <i class="bi bi-bar-chart-line me-1"></i> 绩效
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="equity-tab" data-bs-toggle="tab" data-bs-target="#equity" type="button" role="tab">
+                                        <i class="bi bi-graph-up-arrow me-1"></i> 权益曲线
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="trades-tab" data-bs-toggle="tab" data-bs-target="#trades" type="button" role="tab">
+                                        <i class="bi bi-table me-1"></i> 交易记录
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="analysis-tab" data-bs-toggle="tab" data-bs-target="#analysis" type="button" role="tab">
+                                        <i class="bi bi-robot me-1"></i> LLM分析
+                                    </button>
+                                </li>
+                            </ul>
+                            <div class="tab-content" id="resultsTabsContent">
+                                <div class="tab-pane fade show active" id="performance" role="tabpanel">
+                                    <div class="row g-4">
+                                        <div class="col-md-6">
+                                            <div class="p-3 rounded hover-lift mb-3" style="background-color: rgba(var(--success-rgb), 0.1);">
+                                                <div class="text-muted mb-1">总收益率</div>
+                                                <div class="fs-4 fw-bold text-success">+18.42%</div>
+                                            </div>
+                                            <div class="p-3 rounded hover-lift mb-3" style="background-color: rgba(var(--success-rgb), 0.1);">
+                                                <div class="text-muted mb-1">年化收益率</div>
+                                                <div class="fs-4 fw-bold text-success">+18.42%</div>
+                                            </div>
+                                            <div class="p-3 rounded hover-lift mb-3" style="background-color: rgba(var(--primary-color-rgb), 0.05);">
+                                                <div class="text-muted mb-1">夏普比率</div>
+                                                <div class="fs-4 fw-bold">1.23</div>
+                                            </div>
+                                            <div class="p-3 rounded hover-lift" style="background-color: rgba(var(--danger-rgb), 0.1);">
+                                                <div class="text-muted mb-1">最大回撤</div>
+                                                <div class="fs-4 fw-bold text-danger">-8.76%</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="p-3 rounded hover-lift mb-3" style="background-color: rgba(var(--primary-color-rgb), 0.05);">
+                                                <div class="text-muted mb-1">胜率</div>
+                                                <div class="fs-4 fw-bold">56.8%</div>
+                                            </div>
+                                            <div class="p-3 rounded hover-lift mb-3" style="background-color: rgba(var(--primary-color-rgb), 0.05);">
+                                                <div class="text-muted mb-1">盈亏比</div>
+                                                <div class="fs-4 fw-bold">1.68</div>
+                                            </div>
+                                            <div class="p-3 rounded hover-lift mb-3" style="background-color: rgba(var(--primary-color-rgb), 0.05);">
+                                                <div class="text-muted mb-1">交易次数</div>
+                                                <div class="fs-4 fw-bold">37</div>
+                                            </div>
+                                            <div class="p-3 rounded hover-lift" style="background-color: rgba(var(--primary-color-rgb), 0.05);">
+                                                <div class="text-muted mb-1">平均持仓周期</div>
+                                                <div class="fs-4 fw-bold">12.3 天</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="equity" role="tabpanel">
+                                    <div class="chart-container" style="height: 350px; position: relative;">
+                                        <canvas id="equity-chart"></canvas>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="trades" role="tabpanel">
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>序号</th>
+                                                    <th>交易时间</th>
+                                                    <th>类型</th>
+                                                    <th>股票代码</th>
+                                                    <th>价格</th>
+                                                    <th>收益率</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr class="hover-lift">
+                                                    <td>1</td>
+                                                    <td>2022-01-15</td>
+                                                    <td><span class="badge bg-success">买入</span></td>
+                                                    <td>000001.SH</td>
+                                                    <td>3524.12</td>
+                                                    <td>-</td>
+                                                </tr>
+                                                <tr class="hover-lift">
+                                                    <td>2</td>
+                                                    <td>2022-01-28</td>
+                                                    <td><span class="badge bg-danger">卖出</span></td>
+                                                    <td>000001.SH</td>
+                                                    <td>3583.40</td>
+                                                    <td class="text-success fw-bold">+1.68%</td>
+                                                </tr>
+                                                <tr class="hover-lift">
+                                                    <td>3</td>
+                                                    <td>2022-02-10</td>
+                                                    <td><span class="badge bg-success">买入</span></td>
+                                                    <td>000001.SH</td>
+                                                    <td>3477.86</td>
+                                                    <td>-</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="analysis" role="tabpanel">
+                                    <div class="p-2">
+                                        <div class="mb-4">
+                                            <h6 class="fw-bold mb-3 text-primary">策略表现评估</h6>
+                                            <p>金字塔LLM策略在测试期间表现良好，尤其在震荡市场中展现出较强的适应性。策略通过分批建仓方式有效控制了回撤，同时在上涨趋势中逐步加仓以提高收益。</p>
+                                        </div>
+                                        
+                                        <div class="mb-4">
+                                            <h6 class="fw-bold mb-3 text-primary">优势分析</h6>
+                                            <div class="p-2 mb-2 rounded hover-lift" style="background-color: rgba(var(--success-rgb), 0.05);">
+                                                <i class="bi bi-check-circle-fill text-success me-2"></i>风险控制稳健，最大回撤控制在10%以内，优于市场平均水平
+                                            </div>
+                                            <div class="p-2 mb-2 rounded hover-lift" style="background-color: rgba(var(--success-rgb), 0.05);">
+                                                <i class="bi bi-check-circle-fill text-success me-2"></i>LLM增强决策在市场转折点判断上表现出色，避免了多次错误交易
+                                            </div>
+                                            <div class="p-2 rounded hover-lift" style="background-color: rgba(var(--success-rgb), 0.05);">
+                                                <i class="bi bi-check-circle-fill text-success me-2"></i>分批建仓策略有效降低了平均持仓成本，提高了资金利用效率
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-4">
+                                            <h6 class="fw-bold mb-3 text-danger">改进建议</h6>
+                                            <div class="p-2 mb-2 rounded hover-lift" style="background-color: rgba(var(--danger-rgb), 0.05);">
+                                                <i class="bi bi-exclamation-circle-fill text-danger me-2"></i>可优化止盈策略，部分个股在高点未能及时减仓，错过获利机会
+                                            </div>
+                                            <div class="p-2 mb-2 rounded hover-lift" style="background-color: rgba(var(--danger-rgb), 0.05);">
+                                                <i class="bi bi-exclamation-circle-fill text-danger me-2"></i>考虑增加波动率调节参数，使策略在不同市场环境中更具适应性
+                                            </div>
+                                            <div class="p-2 rounded hover-lift" style="background-color: rgba(var(--danger-rgb), 0.05);">
+                                                <i class="bi bi-exclamation-circle-fill text-danger me-2"></i>对LLM置信度阈值进行调整，在某些情况下过高的阈值错过了潜在机会
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="backtest-placeholder" class="text-center py-5">
+                            <div class="mb-4 text-muted">
+                                <i class="bi bi-arrow-left-circle fs-1 d-block mb-3" style="opacity: 0.2"></i>
+                                请设置参数并点击"开始回测"
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4 mb-lg-0">
+                    <a href="/" class="footer-logo">量化交易系统</a>
+                    <p class="footer-description">
+                        专业的个人量化交易平台，提供智能策略构建、自动化执行和实时监控，帮助您实现交易自动化和资产增值。
+                    </p>
+                    <div class="social-icons">
+                        <a href="#"><i class="bi bi-github"></i></a>
+                        <a href="#"><i class="bi bi-twitter"></i></a>
+                        <a href="#"><i class="bi bi-linkedin"></i></a>
+                        <a href="#"><i class="bi bi-envelope"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6 mb-4 mb-md-0">
+                    <h5>功能导航</h5>
+                    <ul class="footer-links">
+                        <li><a href="/">首页</a></li>
+                        <li><a href="/market">市场概览</a></li>
+                        <li><a href="/watchlist">自选股</a></li>
+                        <li><a href="/backtest">策略回测</a></li>
+                        <li><a href="/trading">交易控制</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6 mb-4 mb-md-0">
+                    <h5>开发资源</h5>
+                    <ul class="footer-links">
+                        <li><a href="#">API文档</a></li>
+                        <li><a href="#">策略示例</a></li>
+                        <li><a href="#">开发指南</a></li>
+                        <li><a href="#">版本历史</a></li>
+                        <li><a href="#">常见问题</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 col-md-4">
+                    <h5>联系我们</h5>
+                    <ul class="footer-links">
+                        <li><i class="bi bi-envelope-fill me-2"></i> support@quant-trading.com</li>
+                        <li><i class="bi bi-telephone-fill me-2"></i> (021) 5678-9000</li>
+                        <li><i class="bi bi-geo-alt-fill me-2"></i> 上海市浦东新区张江高科技园区</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2023-2025 量化交易系统 | 版本 1.2.5 | 所有权利保留</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 回测按钮点击事件
+            document.getElementById('run-backtest').addEventListener('click', function() {
+                // 显示加载状态
+                const button = this;
+                const originalContent = button.innerHTML;
+                button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 回测中...';
+                button.disabled = true;
+                
+                // 模拟回测过程
+                setTimeout(() => {
+                    // 隐藏占位符，显示结果
+                    document.getElementById('backtest-placeholder').style.display = 'none';
+                    document.getElementById('backtest-results').style.display = 'block';
+                    
+                    // 启用导出报告按钮
+                    document.getElementById('export-report').disabled = false;
+                    
+                    // 渲染权益曲线图表
+                    renderEquityChart();
+                    
+                    // 恢复按钮状态
+                    button.innerHTML = originalContent;
+                    button.disabled = false;
+                }, 2000);
+            });
+            
+            // 导出报告按钮点击事件
+            document.getElementById('export-report').addEventListener('click', function() {
+                alert('报告已生成，正在下载...');
+            });
+        });
+        
+        // 渲染权益曲线图表
+        function renderEquityChart() {
+            const ctx = document.getElementById('equity-chart').getContext('2d');
+            
+            // 模拟数据
+            const dates = Array.from({length: 30}, (_, i) => {
+                const date = new Date();
+                date.setDate(date.getDate() - 29 + i);
+                return date.toISOString().split('T')[0];
+            });
+            
+            const equity = [1000000]; // 初始资金
+            for (let i = 1; i < 30; i++) {
+                // 创建一个上升的权益曲线，带有一些波动
+                const change = (Math.random() * 0.02) - 0.005; // -0.5% to 1.5%
+                equity.push(equity[i-1] * (1 + change));
+            }
+            
+            // 创建图表
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: '账户权益',
+                        data: equity,
+                        borderColor: 'rgb(var(--primary-color-rgb))',
+                        backgroundColor: 'rgba(var(--primary-color-rgb), 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 5,
+                        pointBackgroundColor: 'rgb(var(--primary-color-rgb))',
+                        pointHoverBackgroundColor: 'white',
+                        pointHoverBorderColor: 'rgb(var(--primary-color-rgb))',
+                        pointHoverBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                maxTicksLimit: 8
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return `账户权益: ${context.raw.toLocaleString()} 元`;
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html> 

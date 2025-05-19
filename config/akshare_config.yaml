@@ -1,0 +1,16 @@
+# AKShare 数据接口配置
+# 官方文档: https://akshare.akfamily.xyz/introduction.html
+
+# 数据获取配置
+use_cache: true      # 是否启用本地缓存
+cache_dir: "output/cache/akshare"  # 缓存目录
+timeout_seconds: 30  # API调用超时时间
+retry_attempts: 3    # 失败重试次数
+
+# 股票数据配置
+stock_list_provider: "akshare"  # 股票列表数据提供者
+default_exchange: "sh"  # 默认交易所
+
+# 其他配置参数
+daily_data_fields: ["open", "high", "low", "close", "volume", "amount"]  # 日线数据默认字段
+intraday_data_fields: ["open", "high", "low", "close", "volume", "amount"]  # 分钟线数据默认字段 

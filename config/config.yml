@@ -1,0 +1,81 @@
+account:
+  commission_rate: 0.0003
+  initial_capital: 100000.0
+  risk_per_trade: 0.02
+  slippage: 0.0001
+ai:
+  deepseek:
+    api_key: 3470059d-f774-4302-81e0-50fa017fea38
+    base_url: https://ark.cn-beijing.volces.com/api/v3
+    max_tokens: 2048
+    model: deepseek-v3-250324
+    temperature: 0.0
+  default_engine: deepseek
+  huggingface:
+    api_key: ''
+    max_length: 1024
+    model: mistralai/Mistral-7B-Instruct-v0.2
+    temperature: 0.1
+  openai:
+    api_key: ''
+    max_tokens: 2048
+    model: gpt-4o
+    temperature: 0.0
+  strategy_generator:
+    enable: true
+    max_tokens: 2048
+    model: deepseek
+    reasoning_depth: deep
+    signals_required:
+    - entry
+    - exit
+    - confidence
+    temperature: 0.2
+backtest:
+  end_date: '2023-12-31'
+  performance:
+    benchmark: 000001.SH
+    risk_free_rate: 0.03
+  start_date: '2025-01-01'
+  symbols:
+  - 000001.SH
+  - 399001.SZ
+  - 399006.SZ
+  timeframe: 1d
+pyramid_strategy:
+  entry:
+    breakout_periods: 20
+    volume_factor: 1.5
+  exit:
+    profit_target_atr: 5.0
+    time_stop_bars: 10
+    trailing_stop_atr: 2.0
+  money_management:
+    max_correlation: 0.7
+    max_open_positions: 5
+    max_risk_per_trade: 0.02
+  scale_in:
+    max_positions: 4
+    min_profit_ticks: 10
+    position_scale: 0.5
+  trend:
+    atr_period: 14
+    ma_long: 60
+    ma_short: 20
+system:
+  data_dir: ./output/data
+  data_source: ths_sdk
+  debug_mode: false
+  log_level: INFO
+  results_dir: ./output/results
+ths_api:
+  timeout: 10
+  retry_count: 3
+  username: bjzlkj001
+  password: MFh9rGy1
+  sdk_path: ~/ths_sdk/bin64
+  api_mode: sdk
+  api_url: https://quantapi.10jqka.com.cn
+  websocket_url: ws://localhost:8081
+  refresh_token: "eyJzaWduX3RpbWUiOiIyMDI1LTA1LTEyIDExOjM1OjQ0In0=.eyJ1aWQiOiI3ODQwOTQ5OTAiLCJ1c2VyIjp7ImFjY291bnQiOiJianpsa2owMDEiLCJhdXRoVXNlckluZm8iOnt9LCJjb2RlQ1NJIjpbXSwiY29kZVp6QXV0aCI6W10sImhhc0FJUHJlZGljdCI6ZmFsc2UsImhhc0FJVGFsayI6ZmFsc2UsImhhc0NJQ0MiOmZhbHNlLCJoYXNDU0kiOmZhbHNlLCJoYXNFdmVudERyaXZlIjpmYWxzZSwiaGFzRlRTRSI6ZmFsc2UsImhhc0Zhc3QiOmZhbHNlLCJoYXNGdW5kVmFsdWF0aW9uIjpmYWxzZSwiaGFzSEsiOnRydWUsImhhc0xNRSI6ZmFsc2UsImhhc0xldmVsMiI6ZmFsc2UsImhhc1JlYWxDTUUiOmZhbHNlLCJoYXNUcmFuc2ZlciI6ZmFsc2UsImhhc1VTIjpmYWxzZSwiaGFzVVNBSW5kZXgiOmZhbHNlLCJoYXNVU0RFQlQiOmZhbHNlLCJtYXJrZXRBdXRoIjp7IkRDRSI6ZmFsc2V9LCJtYXhPbkxpbmUiOjEsIm5vRGlzayI6ZmFsc2UsInByb2R1Y3RUeXBlIjoiU1VQRVJDT01NQU5EUFJPRFVDVCIsInJlZnJlc2hUb2tlbkV4cGlyZWRUaW1lIjoiMjAyNS0wNi0xMSAxMDoxNDozNyIsInNlc3NzaW9uIjoiZDdiMTBlZWVhNDA4ZDYwN2Y5MGQ1OWUwY2Q4ZjBjNDYiLCJzaWRJbmZvIjp7fSwidHJhbnNBdXRoIjpmYWxzZSwidWlkIjoiNzg0MDk0OTkwIiwidXNlclR5cGUiOiJGUkVFSUFMIiwid2lmaW5kTGltaXRNYXAiOnt9fX0=.620651F1426FC2ED2A7720759653DA8AF49D0984C331333ADEAA0DF2B6F37650"
+  access_token: "af5cdfdf4b73e4a7bc8f3a3a5640cc1cbe165eda.signs_Nzg0MDk0OTkw"

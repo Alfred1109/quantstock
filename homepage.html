@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首页 - 量化交易系统</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        .dashboard-card {
+            height: 100%;
+            transition: all 0.3s ease;
+            border: none;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+            opacity: 0.8;
+        }
+        
+        .stat-card {
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            background: white;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .stat-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: var(--accent-color);
+        }
+        
+        .stat-card.success::before {
+            background: var(--success);
+        }
+        
+        .stat-card.warning::before {
+            background: var(--warning);
+        }
+        
+        .stat-card.danger::before {
+            background: var(--danger);
+        }
+        
+        .stat-card.info::before {
+            background: var(--info);
+        }
+        
+        .stat-icon {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.2rem;
+            color: var(--accent-color);
+            opacity: 0.7;
+        }
+        
+        .stat-title {
+            font-size: 0.9rem;
+            color: var(--text-medium);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            line-height: 1;
+        }
+        
+        .stat-desc {
+            font-size: 0.85rem;
+            color: var(--text-medium);
+            margin-top: auto;
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+        
+        .status-badge i {
+            margin-right: 8px;
+            font-size: 1rem;
+        }
+        
+        .status-badge.active {
+            background-color: rgba(var(--success), 0.1);
+            color: var(--success);
+        }
+        
+        .status-badge.inactive {
+            background-color: rgba(var(--danger), 0.1);
+            color: var(--danger);
+        }
+        
+        .quick-action {
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 1.2rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: var(--text-dark);
+        }
+        
+        .quick-action:hover {
+            transform: translateX(5px);
+            box-shadow: var(--shadow);
+            color: var(--primary-color);
+        }
+        
+        .quick-action-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(var(--primary-color-rgb), 0.1);
+            border-radius: 8px;
+            margin-right: 1rem;
+            color: var(--primary-color);
+        }
+        
+        .quick-action-icon i {
+            font-size: 1.2rem;
+        }
+        
+        .quick-action-content h5 {
+            margin: 0 0 0.3rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .quick-action-content p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: var(--text-medium);
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏模板 -->
+<nav class="navbar navbar-expand-lg navbar-light sticky-top">
+    <div class="container">
+        <a class="navbar-brand" href="/">交易系统</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link active" href="/">首页</a></li>
+                <li class="nav-item"><a class="nav-link " href="/market">市场</a></li>
+                <li class="nav-item"><a class="nav-link " href="/watchlist">自选</a></li>
+                <li class="nav-item"><a class="nav-link " href="/backtest">回测</a></li>
+                <li class="nav-item"><a class="nav-link " href="/config">配置</a></li>
+                <li class="nav-item"><a class="nav-link " href="/settings">设置</a></li>
+            </ul>
+        </div>
+    </div>
+</nav> 
+
+    <div class="container my-4">
+        <!-- 现代化标题区域，统一与其他页面风格 -->
+        <div class="market-header bg-primary text-white p-4 mb-4 rounded">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="market-title mb-2">系统概览</h2>
+                        <p class="market-subtitle mb-0">智能量化交易系统，实现稳健投资收益</p>
+                        <div id="system-status" class="status-badge active mt-3">
+                            <i class="bi bi-activity"></i> 系统正常运行中
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <div class="d-inline-block px-3 py-2 bg-white text-primary rounded">
+                            <span id="current-date"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 统计数据 - 更均衡的布局 -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="stat-card success">
+                    <i class="bi bi-currency-exchange stat-icon"></i>
+                    <div class="stat-title">今日交易数</div>
+                    <div class="stat-value">3</div>
+                    <div class="stat-desc">较昨日 <span class="text-success">+1</span></div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="stat-card info">
+                    <i class="bi bi-bar-chart stat-icon"></i>
+                    <div class="stat-title">当前持仓</div>
+                    <div class="stat-value">2</div>
+                    <div class="stat-desc">2只股票，总市值 ¥56,835</div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="stat-card warning">
+                    <i class="bi bi-graph-up-arrow stat-icon"></i>
+                    <div class="stat-title">当日盈亏</div>
+                    <div class="stat-value">+1.25%</div>
+                    <div class="stat-desc">金额 <span class="text-success">+¥708.50</span></div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="stat-card">
+                    <i class="bi bi-cpu stat-icon"></i>
+                    <div class="stat-title">运行策略</div>
+                    <div class="stat-value">2/3</div>
+                    <div class="stat-desc">有1个策略处于暂停状态</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 主要内容 - 调整为更均衡的比例 -->
+        <div class="row g-4">
+            <!-- 左侧 -->
+            <div class="col-xl-7">
+                <!-- 图表卡片 -->
+                <div class="card dashboard-card mb-4">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">组合绩效</h5>
+                        <div>
+                            <select class="form-select form-select-sm" id="timeframe-selector">
+                                <option value="1d">今日</option>
+                                <option value="1w">本周</option>
+                                <option value="1m" selected>本月</option>
+                                <option value="3m">近三月</option>
+                                <option value="1y">今年</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="performance-chart" height="250"></canvas>
+                    </div>
+                </div>
+                
+                <!-- 最近交易 -->
+                <div class="card dashboard-card">
+                    <div class="card-header bg-white">
+                        <h5 class="card-title mb-0">最近交易</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>时间</th>
+                                        <th>标的</th>
+                                        <th>类型</th>
+                                        <th>价格</th>
+                                        <th>数量</th>
+                                        <th>状态</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>2023-05-18 09:45:32</td>
+                                        <td>科沃斯 (603486.SH)</td>
+                                        <td><span class="badge bg-success">买入</span></td>
+                                        <td>¥118.50</td>
+                                        <td>300</td>
+                                        <td><span class="badge bg-success">已成交</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>2023-05-18 10:15:13</td>
+                                        <td>江苏银行 (600919.SH)</td>
+                                        <td><span class="badge bg-success">买入</span></td>
+                                        <td>¥7.45</td>
+                                        <td>1000</td>
+                                        <td><span class="badge bg-success">已成交</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>2023-05-18 14:32:01</td>
+                                        <td>科沃斯 (603486.SH)</td>
+                                        <td><span class="badge bg-danger">卖出</span></td>
+                                        <td>¥123.75</td>
+                                        <td>300</td>
+                                        <td><span class="badge bg-warning text-dark">待成交</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右侧 - 调整宽度比例 -->
+            <div class="col-xl-5">
+                <!-- 快速操作 -->
+                <div class="card dashboard-card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="card-title mb-0">快速操作</h5>
+                    </div>
+                    <div class="card-body">
+                        <a href="/trading" class="quick-action">
+                            <div class="quick-action-icon">
+                                <i class="bi bi-play-circle"></i>
+                            </div>
+                            <div class="quick-action-content">
+                                <h5>交易控制中心</h5>
+                                <p>启动或停止交易系统，管理交易执行</p>
+                            </div>
+                        </a>
+                        <a href="/settings" class="quick-action">
+                            <div class="quick-action-icon">
+                                <i class="bi bi-gear"></i>
+                            </div>
+                            <div class="quick-action-content">
+                                <h5>系统设置</h5>
+                                <p>修改策略参数和系统配置</p>
+                            </div>
+                        </a>
+                        <a href="/backtest" class="quick-action">
+                            <div class="quick-action-icon">
+                                <i class="bi bi-clock-history"></i>
+                            </div>
+                            <div class="quick-action-content">
+                                <h5>策略回测</h5>
+                                <p>基于历史数据测试策略表现</p>
+                            </div>
+                        </a>
+                        <a href="/watchlist" class="quick-action">
+                            <div class="quick-action-icon">
+                                <i class="bi bi-star"></i>
+                            </div>
+                            <div class="quick-action-content">
+                                <h5>自选股管理</h5>
+                                <p>管理和监控关注的标的</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 持仓概览 -->
+                <div class="card dashboard-card mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="card-title mb-0">持仓概览</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div style="width: 30px; height: 30px; background-color: var(--primary-color); border-radius: 5px; margin-right: 10px;"></div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between">
+                                    <span>科沃斯 (603486.SH)</span>
+                                    <span class="text-success">+4.43%</span>
+                                </div>
+                                <div class="progress mt-1" style="height: 5px;">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 65%;" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div style="width: 30px; height: 30px; background-color: var(--secondary-color); border-radius: 5px; margin-right: 10px;"></div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between">
+                                    <span>江苏银行 (600919.SH)</span>
+                                    <span class="text-danger">-0.94%</span>
+                                </div>
+                                <div class="progress mt-1" style="height: 5px;">
+                                    <div class="progress-bar bg-danger" role="progressbar" style="width: 35%;" aria-valuenow="35" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 系统状态 -->
+                <div class="card dashboard-card">
+                    <div class="card-header bg-white">
+                        <h5 class="card-title mb-0">系统状态</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <small class="text-muted">CPU使用率</small>
+                            <div class="progress mt-1" style="height: 8px;">
+                                <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted">内存使用率</small>
+                            <div class="progress mt-1" style="height: 8px;">
+                                <div class="progress-bar" role="progressbar" style="width: 45%;" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <small class="text-muted">磁盘使用率</small>
+                            <div class="progress mt-1" style="height: 8px;">
+                                <div class="progress-bar" role="progressbar" style="width: 60%;" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">上次启动时间</span>
+                            <span>2023-05-18 09:00:15</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">运行时长</span>
+                            <span>06:35:45</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">数据源状态</span>
+                            <span class="text-success">正常</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4 mb-lg-0">
+                    <a href="/" class="footer-logo">量化交易系统</a>
+                    <p class="footer-description">
+                        专业的个人量化交易平台，提供智能策略构建、自动化执行和实时监控，帮助您实现交易自动化和资产增值。
+                    </p>
+                    <div class="social-icons">
+                        <a href="#"><i class="bi bi-github"></i></a>
+                        <a href="#"><i class="bi bi-twitter"></i></a>
+                        <a href="#"><i class="bi bi-linkedin"></i></a>
+                        <a href="#"><i class="bi bi-envelope"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6 mb-4 mb-md-0">
+                    <h5>功能导航</h5>
+                    <ul class="footer-links">
+                        <li><a href="/">首页</a></li>
+                        <li><a href="/market">市场概览</a></li>
+                        <li><a href="/watchlist">自选股</a></li>
+                        <li><a href="/backtest">策略回测</a></li>
+                        <li><a href="/trading">交易控制</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6 mb-4 mb-md-0">
+                    <h5>开发资源</h5>
+                    <ul class="footer-links">
+                        <li><a href="#">API文档</a></li>
+                        <li><a href="#">策略示例</a></li>
+                        <li><a href="#">开发指南</a></li>
+                        <li><a href="#">版本历史</a></li>
+                        <li><a href="#">常见问题</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 col-md-4">
+                    <h5>联系我们</h5>
+                    <ul class="footer-links">
+                        <li><i class="bi bi-envelope-fill me-2"></i> support@quant-trading.com</li>
+                        <li><i class="bi bi-telephone-fill me-2"></i> (021) 5678-9000</li>
+                        <li><i class="bi bi-geo-alt-fill me-2"></i> 上海市浦东新区张江高科技园区</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2023-2025 量化交易系统 | 版本 1.2.5 | 所有权利保留</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 当前日期显示
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            document.getElementById('current-date').textContent = today.toLocaleDateString('zh-CN', options);
+        });
+
+        // 绘制绩效图表
+        document.addEventListener('DOMContentLoaded', function() {
+            const performanceCtx = document.getElementById('performance-chart').getContext('2d');
+            
+            // 模拟数据
+            const dates = Array.from({length: 30}, (_, i) => {
+                const date = new Date();
+                date.setDate(date.getDate() - (30 - i - 1));
+                return date.toLocaleDateString('zh-CN', {month: 'short', day: 'numeric'});
+            });
+            
+            // 模拟收益率曲线
+            const baseValue = 100;
+            let previousValue = baseValue;
+            const strategyValues = dates.map(() => {
+                const change = (Math.random() * 2 - 0.9) * 0.8; // 生成-0.8%到1.1%之间的变化
+                previousValue = previousValue * (1 + change / 100);
+                return previousValue;
+            });
+            
+            // 模拟基准
+            previousValue = baseValue;
+            const benchmarkValues = dates.map(() => {
+                const change = (Math.random() * 1.6 - 0.8) * 0.8; // 生成-0.64%到0.8%之间的变化
+                previousValue = previousValue * (1 + change / 100);
+                return previousValue;
+            });
+            
+            // 创建图表 - 更新颜色以匹配新配色方案
+            const performanceChart = new Chart(performanceCtx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [
+                        {
+                            label: '策略收益',
+                            data: strategyValues,
+                            borderColor: 'var(--primary-color)',
+                            backgroundColor: 'rgba(var(--primary-color-rgb), 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 2
+                        },
+                        {
+                            label: '沪深300',
+                            data: benchmarkValues,
+                            borderColor: 'var(--secondary-color)',
+                            borderDash: [5, 5],
+                            fill: false,
+                            tension: 0.4,
+                            borderWidth: 1.5
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toFixed(2);
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+            
+            // 时间范围选择器
+            document.getElementById('timeframe-selector').addEventListener('change', function(e) {
+                const timeframe = e.target.value;
+                let dataPoints;
+                
+                switch(timeframe) {
+                    case '1d':
+                        dataPoints = 24; // 小时
+                        break;
+                    case '1w':
+                        dataPoints = 7; // 天
+                        break;
+                    case '1m':
+                        dataPoints = 30; // 天
+                        break;
+                    case '3m':
+                        dataPoints = 90; // 天
+                        break;
+                    case '1y':
+                        dataPoints = 365; // 天
+                        break;
+                    default:
+                        dataPoints = 30;
+                }
+                
+                // 简单模拟，使用相同数据但截取不同长度
+                performanceChart.data.labels = dates.slice(-dataPoints);
+                performanceChart.data.datasets[0].data = strategyValues.slice(-dataPoints);
+                performanceChart.data.datasets[1].data = benchmarkValues.slice(-dataPoints);
+                performanceChart.update();
+            });
+        });
+    </script>
+</body>
+</html> 

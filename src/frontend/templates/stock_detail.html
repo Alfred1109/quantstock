@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>股票详情 - 量化交易系统</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- 引入图表库 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    {% include 'navbar.html' %}
+
+    <div class="container my-4">
+        <!-- 现代化标题区域 -->
+        <div class="stock-header bg-primary text-white p-4 mb-4 rounded">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="stock-title mb-2">{{ symbol }}</h2>
+                        <p class="stock-subtitle mb-0">股票详情与技术分析</p>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-light me-2" id="add-watchlist-btn">
+                                <i class="bi bi-star me-1"></i> 添加自选
+                            </button>
+                            <button type="button" class="btn btn-light" id="export-data-btn">
+                                <i class="bi bi-download me-1"></i> 导出数据
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="trading-card mb-4">
+                    <div class="trading-card-header d-flex justify-content-between align-items-center">
+                        <span>K线走势</span>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-sm btn-outline-primary active rounded-pill me-1" id="kline-day">
+                                <i class="bi bi-calendar-day me-1"></i> 日K
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill me-1" id="kline-week">
+                                <i class="bi bi-calendar-week me-1"></i> 周K
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill" id="kline-month">
+                                <i class="bi bi-calendar-month me-1"></i> 月K
+                            </button>
+                        </div>
+                    </div>
+                    <div class="trading-card-body">
+                        <canvas id="kline-chart" height="350"></canvas>
+                    </div>
+                </div>
+                
+                <div class="trading-card mb-4">
+                    <div class="trading-card-header">
+                        <span>技术指标</span>
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                    <div class="trading-card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="p-3 rounded hover-lift" style="background-color: rgba(var(--primary-color-rgb), 0.05);">
+                                    <h6 class="mb-2 d-flex align-items-center">
+                                        <i class="bi bi-bar-chart-line me-2"></i> MACD
+                                    </h6>
+                                    <p class="mb-1 fw-bold fs-5" id="macd-value">计算中...</p>
+                                    <p class="mb-0 small" id="macd-signal"></p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 rounded hover-lift" style="background-color: rgba(var(--primary-color-rgb), 0.05);">
+                                    <h6 class="mb-2 d-flex align-items-center">
+                                        <i class="bi bi-bar-chart me-2"></i> RSI
+                                    </h6>
+                                    <p class="mb-1 fw-bold fs-5" id="rsi-value">计算中...</p>
+                                    <p class="mb-0 small" id="rsi-signal"></p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 rounded hover-lift" style="background-color: rgba(var(--primary-color-rgb), 0.05);">
+                                    <h6 class="mb-2 d-flex align-items-center">
+                                        <i class="bi bi-bar-chart-steps me-2"></i> KDJ
+                                    </h6>
+                                    <p class="mb-1 fw-bold fs-5" id="kdj-value">计算中...</p>
+                                    <p class="mb-0 small" id="kdj-signal"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="trading-card mb-4">
+                    <div class="trading-card-header">
+                        <span>实时行情</span>
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                    <div class="trading-card-body" id="quote-info">
+                        <div class="d-flex justify-content-between mb-3 py-2 border-bottom">
+                            <span class="text-muted">最新价</span>
+                            <span id="current-price" class="fw-bold">--</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3 py-2 border-bottom">
+                            <span class="text-muted">涨跌幅</span>
+                            <span id="price-change-percent" class="fw-bold">--</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3 py-2 border-bottom">
+                            <span class="text-muted">今开</span>
+                            <span id="open-price">--</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3 py-2 border-bottom">
+                            <span class="text-muted">最高</span>
+                            <span id="high-price">--</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3 py-2 border-bottom">
+                            <span class="text-muted">最低</span>
+                            <span id="low-price">--</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3 py-2 border-bottom">
+                            <span class="text-muted">成交量</span>
+                            <span id="volume">--</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-2">
+                            <span class="text-muted">更新时间</span>
+                            <span id="update-time">--</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="trading-card mb-4">
+                    <div class="trading-card-header">
+                        <span>LLM分析</span>
+                        <i class="bi bi-robot"></i>
+                    </div>
+                    <div class="trading-card-body" id="llm-analysis">
+                        <div class="alert alert-primary border-0 rounded-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-hourglass-split me-2"></i>
+                                <span>AI分析加载中...</span>
+                            </div>
+                            <div class="progress mt-2" style="height:4px">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="trading-card">
+                    <div class="trading-card-header">
+                        <span>交易操作</span>
+                        <i class="bi bi-currency-exchange"></i>
+                    </div>
+                    <div class="trading-card-body">
+                        <div class="d-grid gap-3">
+                            <button class="btn btn-success" type="button" id="buy-btn">
+                                <i class="bi bi-arrow-down-circle me-1"></i> 买入
+                            </button>
+                            <button class="btn btn-danger" type="button" id="sell-btn">
+                                <i class="bi bi-arrow-up-circle me-1"></i> 卖出
+                            </button>
+                        </div>
+                        <div class="alert alert-light mt-3 p-2 text-center rounded">
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle me-1"></i> 实际交易前请确认您的账户设置
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 成功提示 Toast -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+        <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-check-circle me-2"></i>
+                    <span id="toast-message">操作成功</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            const symbol = '{{ symbol }}';
+            
+            // 获取K线数据
+            fetchKlineData(symbol, 'day');
+            
+            // 获取实时行情
+            fetchQuoteData(symbol);
+            
+            // 模拟LLM分析
+            simulateLLMAnalysis(symbol);
+            
+            // 切换K线周期事件
+            document.getElementById('kline-day').addEventListener('click', function() {
+                setActiveKlineButton('kline-day');
+                fetchKlineData(symbol, 'day');
+            });
+            
+            document.getElementById('kline-week').addEventListener('click', function() {
+                setActiveKlineButton('kline-week');
+                fetchKlineData(symbol, 'week');
+            });
+            
+            document.getElementById('kline-month').addEventListener('click', function() {
+                setActiveKlineButton('kline-month');
+                fetchKlineData(symbol, 'month');
+            });
+            
+            // 添加交易按钮事件
+            document.getElementById('buy-btn').addEventListener('click', function() {
+                showToast('买入功能开发中', 'warning');
+            });
+            
+            document.getElementById('sell-btn').addEventListener('click', function() {
+                showToast('卖出功能开发中', 'warning');
+            });
+            
+            document.getElementById('add-watchlist-btn').addEventListener('click', function() {
+                addToWatchlist(symbol);
+                showToast('已添加到自选列表');
+            });
+            
+            document.getElementById('export-data-btn').addEventListener('click', function() {
+                exportData(symbol);
+                showToast('数据已导出');
+            });
+        });
+        
+        // 设置活动K线按钮
+        function setActiveKlineButton(activeId) {
+            document.querySelectorAll('.btn-group button').forEach(button => {
+                button.classList.remove('active');
+            });
+            document.getElementById(activeId).classList.add('active');
+        }
+        
+        // 获取K线数据
+        function fetchKlineData(symbol, period) {
+            // 这里应该调用后端API获取数据
+            // 使用模拟数据演示
+            
+            // 生成模拟数据
+            const days = 30;
+            const labels = [];
+            const data = [];
+            
+            const seedValue = symbol.charCodeAt(0) + period.charCodeAt(0);
+            let baseValue = 3000 + (seedValue % 1000);
+            
+            for (let i = 0; i < days; i++) {
+                const date = new Date();
+                date.setDate(date.getDate() - (days - i));
+                labels.push(date.toISOString().split('T')[0]);
+                
+                // 添加一些波动
+                const change = (Math.random() * 0.04) - 0.02; // -2% to 2%
+                baseValue = baseValue * (1 + change);
+                data.push(baseValue);
+            }
+            
+            // 绘制K线图表
+            const ctx = document.getElementById('kline-chart').getContext('2d');
+            
+            if (window.klineChart) {
+                window.klineChart.destroy();
+            }
+            
+            window.klineChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: symbol,
+                        data: data,
+                        borderColor: 'rgb(var(--primary-color-rgb))',
+                        backgroundColor: 'rgba(var(--primary-color-rgb), 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        pointHoverRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                maxTicksLimit: 8
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+            
+            // 更新技术指标
+            updateTechnicalIndicators(data);
+        }
+        
+        // 获取实时行情
+        function fetchQuoteData(symbol) {
+            // 使用模拟数据
+            const seed = symbol.charCodeAt(0) + symbol.charCodeAt(symbol.length - 1);
+            const basePrice = 3000 + (seed % 1000);
+            const change = ((seed % 200 - 100) / 100).toFixed(2);
+            const changePct = (change / basePrice * 100).toFixed(2);
+            const open = (basePrice * 0.99).toFixed(2);
+            const high = (basePrice * 1.02).toFixed(2);
+            const low = (basePrice * 0.98).toFixed(2);
+            const volume = 1000000 + seed % 500000;
+            
+            // 更新DOM
+            document.getElementById('current-price').textContent = basePrice.toFixed(2);
+            
+            const priceChangeElement = document.getElementById('price-change-percent');
+            if (changePct > 0) {
+                priceChangeElement.textContent = '+' + changePct + '%';
+                priceChangeElement.className = 'fw-bold text-success';
+            } else {
+                priceChangeElement.textContent = changePct + '%';
+                priceChangeElement.className = 'fw-bold text-danger';
+            }
+            
+            document.getElementById('open-price').textContent = open;
+            document.getElementById('high-price').textContent = high;
+            document.getElementById('low-price').textContent = low;
+            document.getElementById('volume').textContent = volume.toLocaleString();
+            document.getElementById('update-time').textContent = new Date().toLocaleTimeString();
+        }
+        
+        // 更新技术指标
+        function updateTechnicalIndicators(data) {
+            // 计算MACD
+            const macdValue = (Math.random() * 20 - 10).toFixed(2);
+            document.getElementById('macd-value').textContent = macdValue;
+            
+            const macdSignal = document.getElementById('macd-signal');
+            if (macdValue > 0) {
+                macdSignal.textContent = '多头信号，上升趋势';
+                macdSignal.className = 'mb-0 small text-success';
+            } else {
+                macdSignal.textContent = '空头信号，下降趋势';
+                macdSignal.className = 'mb-0 small text-danger';
+            }
+            
+            // 计算RSI
+            const rsiValue = Math.floor(Math.random() * 100);
+            document.getElementById('rsi-value').textContent = rsiValue;
+            
+            const rsiSignal = document.getElementById('rsi-signal');
+            if (rsiValue > 70) {
+                rsiSignal.textContent = '超买区间，可能回调';
+                rsiSignal.className = 'mb-0 small text-danger';
+            } else if (rsiValue < 30) {
+                rsiSignal.textContent = '超卖区间，可能反弹';
+                rsiSignal.className = 'mb-0 small text-success';
+            } else {
+                rsiSignal.textContent = '中性区间';
+                rsiSignal.className = 'mb-0 small text-muted';
+            }
+            
+            // 计算KDJ
+            const kValue = Math.floor(Math.random() * 100);
+            const dValue = Math.floor(Math.random() * 100);
+            const jValue = Math.floor(Math.random() * 100);
+            document.getElementById('kdj-value').textContent = `K:${kValue} D:${dValue} J:${jValue}`;
+            
+            const kdjSignal = document.getElementById('kdj-signal');
+            if (kValue > dValue) {
+                kdjSignal.textContent = 'K线上穿D线，买入信号';
+                kdjSignal.className = 'mb-0 small text-success';
+            } else {
+                kdjSignal.textContent = 'K线下穿D线，卖出信号';
+                kdjSignal.className = 'mb-0 small text-danger';
+            }
+        }
+        
+        // 模拟LLM分析
+        function simulateLLMAnalysis(symbol) {
+            // 模拟加载延迟
+            setTimeout(function() {
+                const analysis = `
+                    <div class="mb-3">
+                        <h6 class="fw-bold mb-2 text-primary">技术面分析</h6>
+                        <p>该股票当前处于上升通道中，MACD指标显示多头趋势正在形成，短期内可能会有一定的上涨空间。但RSI指标处于${Math.random() > 0.5 ? '超买' : '中性'}区间，建议保持观望。</p>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="fw-bold mb-2 text-primary">基本面分析</h6>
+                        <p>公司最近财报显示营收同比增长${(Math.random() * 20 + 5).toFixed(1)}%，毛利率维持在${(Math.random() * 10 + 30).toFixed(1)}%的水平。行业竞争格局稳定，公司市场份额有所提升。</p>
+                    </div>
+                    <div class="mb-0">
+                        <h6 class="fw-bold mb-2 text-primary">投资建议</h6>
+                        <div class="p-2 rounded" style="background-color: rgba(var(--primary-color-rgb), 0.05);">
+                            <i class="bi bi-lightbulb-fill text-warning me-2"></i>
+                            <span>${Math.random() > 0.5 ? '可考虑分批建仓，逢低买入' : '短期内保持观望，等待更好的买入时机'}</span>
+                        </div>
+                    </div>
+                    <div class="alert alert-light mt-3 p-2 text-center rounded">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i> 本分析仅供参考，不构成投资建议
+                        </small>
+                    </div>
+                `;
+                
+                document.getElementById('llm-analysis').innerHTML = analysis;
+            }, 2000);
+        }
+        
+        // 添加到自选股
+        function addToWatchlist(symbol) {
+            // 从本地存储获取自选股列表
+            const storedWatchlist = localStorage.getItem('watchlist');
+            let watchlist = storedWatchlist ? JSON.parse(storedWatchlist) : [];
+            
+            // 检查是否已经添加
+            if (!watchlist.includes(symbol)) {
+                watchlist.push(symbol);
+                localStorage.setItem('watchlist', JSON.stringify(watchlist));
+            }
+        }
+        
+        // 导出数据
+        function exportData(symbol) {
+            // 生成模拟数据
+            const days = 30;
+            const data = [];
+            
+            const seedValue = symbol.charCodeAt(0);
+            let baseValue = 3000 + (seedValue % 1000);
+            
+            for (let i = 0; i < days; i++) {
+                const date = new Date();
+                date.setDate(date.getDate() - (days - i));
+                
+                // 添加一些波动
+                const change = (Math.random() * 0.04) - 0.02; // -2% to 2%
+                baseValue = baseValue * (1 + change);
+                
+                data.push({
+                    date: date.toISOString().split('T')[0],
+                    open: (baseValue * 0.99).toFixed(2),
+                    high: (baseValue * 1.02).toFixed(2),
+                    low: (baseValue * 0.98).toFixed(2),
+                    close: baseValue.toFixed(2),
+                    volume: Math.floor(1000000 + Math.random() * 500000)
+                });
+            }
+            
+            // 创建CSV内容
+            const csvContent = 'data:text/csv;charset=utf-8,' + 
+                'Date,Open,High,Low,Close,Volume\n' + 
+                data.map(row => `${row.date},${row.open},${row.high},${row.low},${row.close},${row.volume}`).join('\n');
+            
+            // 创建下载链接
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement('a');
+            link.setAttribute('href', encodedUri);
+            link.setAttribute('download', `${symbol}_data.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // 显示Toast提示
+        function showToast(message, type = 'success') {
+            // 更新Toast内容和样式
+            const toast = document.getElementById('successToast');
+            const toastMessage = document.getElementById('toast-message');
+            
+            // 清除原有样式
+            toast.classList.remove('bg-success', 'bg-danger', 'bg-warning');
+            
+            // 添加新样式
+            if (type === 'success') {
+                toast.classList.add('bg-success');
+            } else if (type === 'danger') {
+                toast.classList.add('bg-danger');
+            } else if (type === 'warning') {
+                toast.classList.add('bg-warning', 'text-dark');
+            }
+            
+            // 设置消息内容
+            toastMessage.textContent = message;
+            
+            // 显示Toast
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+        }
+    </script>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4 mb-lg-0">
+                    <a href="/" class="footer-logo">量化交易系统</a>
+                    <p class="footer-description">
+                        专业的个人量化交易平台，提供智能策略构建、自动化执行和实时监控，帮助您实现交易自动化和资产增值。
+                    </p>
+                    <div class="social-icons">
+                        <a href="#"><i class="bi bi-github"></i></a>
+                        <a href="#"><i class="bi bi-twitter"></i></a>
+                        <a href="#"><i class="bi bi-linkedin"></i></a>
+                        <a href="#"><i class="bi bi-envelope"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6 mb-4 mb-md-0">
+                    <h5>功能导航</h5>
+                    <ul class="footer-links">
+                        <li><a href="/">首页</a></li>
+                        <li><a href="/market">市场概览</a></li>
+                        <li><a href="/watchlist">自选股</a></li>
+                        <li><a href="/backtest">策略回测</a></li>
+                        <li><a href="/trading">交易控制</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6 mb-4 mb-md-0">
+                    <h5>开发资源</h5>
+                    <ul class="footer-links">
+                        <li><a href="#">API文档</a></li>
+                        <li><a href="#">策略示例</a></li>
+                        <li><a href="#">开发指南</a></li>
+                        <li><a href="#">版本历史</a></li>
+                        <li><a href="#">常见问题</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 col-md-4">
+                    <h5>联系我们</h5>
+                    <ul class="footer-links">
+                        <li><i class="bi bi-envelope-fill me-2"></i> support@quant-trading.com</li>
+                        <li><i class="bi bi-telephone-fill me-2"></i> (021) 5678-9000</li>
+                        <li><i class="bi bi-geo-alt-fill me-2"></i> 上海市浦东新区张江高科技园区</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2023-2025 量化交易系统 | 版本 1.2.5 | 所有权利保留</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html> 

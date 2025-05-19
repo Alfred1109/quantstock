@@ -1,0 +1,8 @@
+# Global application settings
+
+logging:
+  level: "INFO" # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/app.log" # Optional: path to log file
+
+mode: "backtest" # backtest, paper_trade, live_trade 

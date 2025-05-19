@@ -1,0 +1,22 @@
+# Broker API Configuration
+
+simulated_broker:
+  initial_cash: 1000000.00
+  commission_pct: 0.0003 # Example commission rate
+  slippage_pct: 0.0001   # Example slippage
+
+# Example for a real broker (e.g., CTP for futures)
+# ctp:
+#   user_id: "your_ctp_userid"
+#   password: "your_ctp_password"
+#   broker_id: "your_broker_id"
+#   front_address_trade: "tcp://some_trade_front_address:port"
+#   front_address_md: "tcp://some_md_front_address:port"
+#   app_id: "your_app_id" # If required
+#   auth_code: "your_auth_code" # If required
+
+# Another example for a stock broker
+# stock_broker_xyz:
+#   api_key_env_var: "BROKER_API_KEY"
+#   api_secret_env_var: "BROKER_API_SECRET"
+#   account_id: "your_account_id" 

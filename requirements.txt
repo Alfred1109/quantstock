@@ -1,0 +1,42 @@
+# 基础依赖
+pandas>=1.3.0
+numpy>=1.20.0
+matplotlib>=3.4.0
+seaborn>=0.11.0
+tqdm>=4.62.0
+
+# 网络和通信
+requests>=2.25.0
+websocket-client>=1.2.0
+websockets>=10.4 # 用于实时数据服务的WebSocket服务器
+
+# 配置和序列化
+pyyaml>=6.0.0
+
+# 数据处理和分析
+scikit-learn>=1.0.0
+# ta-lib>=0.4.0 # Often causes install issues, handled by script installing 'ta' instead
+ta # Python TA library as an alternative or wrapper
+
+# 多进程和并行计算
+joblib>=1.1.0
+
+# 测试工具
+pytest>=6.2.0
+pytest-mock>=3.6.0
+
+# 日志与工具
+loguru==0.6.0
+pytz==2022.1
+python-dotenv==0.20.0
+dataclasses-json==0.5.7
+
+# AI / LLM 相关依赖 (根据 structure.md 和代码)
+openai>=1.0.0
+langchain>=0.1.0
+# huggingface-hub>=0.19.0 # Add if direct hub interaction is needed beyond inference API
+# chromadb>=0.4.0           # Add if using ChromaDB as vector store
+# faiss-cpu>=1.7.0          # Add if using FAISS as vector store
+
+# 数据获取
+akshare>=1.16.92 

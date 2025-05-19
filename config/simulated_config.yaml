@@ -1,0 +1,30 @@
+# config/simulated_config.yaml
+# Settings for the SimulatedDataProvider
+
+# Default date range for data generation if not overridden by specific requests
+# when the provider is initialized without more specific parameters from elsewhere.
+start_date: "2023-01-01"
+end_date: "2024-01-01"
+
+# Default list of symbols the simulated provider will be aware of or generate data for.
+# These symbols are used by the provider's __init__ method to set its internal list.
+# The actual data generation in get_historical_data or get_current_price
+# will still be for the specific symbol requested in those calls, but this list
+# can be used by the provider to know which symbols it's "supposed" to simulate.
+symbols:
+  - "SIM_AAPL"  # Apple Inc.
+  - "SIM_MSFT"  # Microsoft Corp.
+  - "SIM_GOOG"  # Alphabet Inc. (Google)
+  - "SIM_AMZN"  # Amazon.com Inc.
+  - "SIM_TSLA"  # Tesla Inc.
+  - "SIM_BTC"   # Bitcoin (example crypto)
+  - "SIM_ETH"   # Ethereum (example crypto)
+
+# Example of other potential parameters for simulation (currently illustrative, not used by the provider):
+# data_source_type: "generated" # or "loaded_from_file"
+# base_price_range: [50, 500]
+# daily_volatility_percentage: 0.02 # 2% daily volatility
+# weekend_behavior: "skip" # or "flat", "continue_random_walk"
+
+# Log level specific to this provider (if the provider's logger supported it directly)
+# log_level: "INFO" 

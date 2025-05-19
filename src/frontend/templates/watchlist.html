@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自选股 - 量化交易系统</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body>
+    {% include 'navbar.html' %}
+
+    <div class="container my-4">
+        <!-- 现代化标题区域 -->
+        <div class="watchlist-header bg-primary text-white p-4 mb-4 rounded">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="watchlist-title mb-2">我的自选股</h2>
+                        <p class="watchlist-subtitle mb-0">跟踪您感兴趣的股票和指数，快速获取市场动向</p>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <button type="button" class="btn btn-light me-2" id="refresh-watchlist-btn">
+                            <i class="bi bi-arrow-clockwise me-1"></i> 刷新数据
+                        </button>
+                        <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#addStockModal">
+                            <i class="bi bi-plus-lg me-1"></i> 添加股票
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="trading-card mb-4">
+                    <div class="trading-card-header">
+                        <span>自选股列表</span>
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                    <div class="trading-card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>代码</th>
+                                        <th>名称</th>
+                                        <th>最新价</th>
+                                        <th>涨跌幅</th>
+                                        <th>成交量</th>
+                                        <th>更新时间</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="watchlist-table">
+                                    <tr>
+                                        <td colspan="7" class="text-center">
+                                            <div class="alert alert-primary border-0 rounded-3">
+                                                <i class="bi bi-exclamation-circle me-2"></i>您的自选股列表为空，请点击"添加股票"按钮添加
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 市场动态卡片 -->
+                <div class="trading-card">
+                    <div class="trading-card-header">
+                        <span>市场动态</span>
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                    <div class="trading-card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="market-summary mb-4">
+                                    <h5 class="mb-3">主要指数</h5>
+                                    <div class="d-flex justify-content-between align-items-center mb-3 p-2 rounded hover-lift" style="background-color: rgba(var(--primary-color-rgb), 0.05);">
+                                        <div>
+                                            <div class="fw-bold">上证指数</div>
+                                            <small class="text-muted">000001.SH</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="fw-bold">3253.12</div>
+                                            <small class="text-success">+0.87%</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-3 p-2 rounded hover-lift" style="background-color: rgba(var(--primary-color-rgb), 0.05);">
+                                        <div>
+                                            <div class="fw-bold">深证成指</div>
+                                            <small class="text-muted">399001.SZ</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="fw-bold">10425.68</div>
+                                            <small class="text-success">+1.25%</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center p-2 rounded hover-lift" style="background-color: rgba(var(--primary-color-rgb), 0.05);">
+                                        <div>
+                                            <div class="fw-bold">创业板指</div>
+                                            <small class="text-muted">399006.SZ</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="fw-bold">2158.13</div>
+                                            <small class="text-danger">-0.32%</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="market-summary">
+                                    <h5 class="mb-3">市场情绪</h5>
+                                    <div class="row g-3">
+                                        <div class="col-6">
+                                            <div class="p-3 rounded hover-lift" style="background-color: rgba(var(--success), 0.1);">
+                                                <div class="text-muted mb-1">上涨家数</div>
+                                                <div class="fw-bold fs-4">1842</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="p-3 rounded hover-lift" style="background-color: rgba(var(--danger), 0.1);">
+                                                <div class="text-muted mb-1">下跌家数</div>
+                                                <div class="fw-bold fs-4">1053</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                                <span class="text-muted">情绪指标</span>
+                                                <div>
+                                                    <span class="me-2 text-success fw-bold">偏多</span>
+                                                    <span class="text-muted">(65%)</span>
+                                                </div>
+                                            </div>
+                                            <div class="progress mt-2" style="height:6px">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: 65%" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加股票弹窗 -->
+    <div class="modal fade" id="addStockModal" tabindex="-1" aria-labelledby="addStockModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addStockModalLabel">添加股票到自选列表</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-stock-form">
+                        <div class="mb-3">
+                            <label for="stock-code" class="form-label">股票代码</label>
+                            <input type="text" class="form-control" id="stock-code" placeholder="例如：000001.SH">
+                            <div class="form-text">输入股票代码或指数代码，例如：000001.SH（上证指数）</div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="add-stock-button">添加</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 成功提示 Toast -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+        <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-check-circle me-2"></i>
+                    <span id="toast-message">操作成功</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 这里应该从本地存储或服务器加载自选股列表
+            const storedWatchlist = localStorage.getItem('watchlist');
+            let watchlist = storedWatchlist ? JSON.parse(storedWatchlist) : ['000001.SH', '399001.SZ'];
+            
+            updateWatchlistTable(watchlist);
+            
+            // 添加股票按钮点击事件
+            document.getElementById('add-stock-button').addEventListener('click', function() {
+                const stockCode = document.getElementById('stock-code').value.trim();
+                if (!stockCode) {
+                    showToast('请输入股票代码', 'danger');
+                    return;
+                }
+                
+                if (!watchlist.includes(stockCode)) {
+                    watchlist.push(stockCode);
+                    localStorage.setItem('watchlist', JSON.stringify(watchlist));
+                    updateWatchlistTable(watchlist);
+                    
+                    // 关闭弹窗
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addStockModal'));
+                    modal.hide();
+                    
+                    // 清空输入框
+                    document.getElementById('stock-code').value = '';
+                    
+                    // 显示成功提示
+                    showToast('股票添加成功');
+                } else {
+                    showToast('该股票已在自选列表中', 'warning');
+                }
+            });
+            
+            // 刷新按钮点击事件
+            document.getElementById('refresh-watchlist-btn').addEventListener('click', function() {
+                const button = this;
+                const originalContent = button.innerHTML;
+                
+                // 显示加载状态
+                button.innerHTML = '<i class="bi bi-arrow-repeat"></i> 刷新中...';
+                button.disabled = true;
+                
+                // 模拟刷新操作
+                setTimeout(() => {
+                    updateWatchlistTable(watchlist);
+                    button.innerHTML = originalContent;
+                    button.disabled = false;
+                    showToast('数据已刷新');
+                }, 800);
+            });
+        });
+        
+        // 更新自选股表格
+        function updateWatchlistTable(watchlist) {
+            const tableBody = document.getElementById('watchlist-table');
+            
+            if (!watchlist || watchlist.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center">
+                            <div class="alert alert-primary border-0 rounded-3">
+                                <i class="bi bi-exclamation-circle me-2"></i>您的自选股列表为空，请点击"添加股票"按钮添加
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // 清空表格
+            tableBody.innerHTML = '';
+            
+            // 为每个股票获取数据并添加到表格
+            watchlist.forEach(symbol => {
+                // 在这里，我们假设有一个API来获取股票数据
+                // 实际项目中，应该调用后端API获取数据
+                // 这里先使用模拟数据
+                const seed = hashCode(symbol + new Date().toDateString());
+                const basePrice = 3000 + (seed % 1000);
+                const change = ((seed % 200 - 100) / 100).toFixed(2);
+                const changePct = (change / basePrice * 100).toFixed(2);
+                const volume = 1000000 + seed % 500000;
+                const time = new Date().toLocaleTimeString();
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><a href="/stock/${symbol}" class="text-decoration-none">${symbol}</a></td>
+                    <td>模拟指数${symbol.slice(-6, -3)}</td>
+                    <td class="fw-bold">${basePrice.toFixed(2)}</td>
+                    <td class="${change >= 0 ? 'text-success' : 'text-danger'} fw-bold">${change >= 0 ? '+' : ''}${change}%</td>
+                    <td>${volume.toLocaleString()}</td>
+                    <td>${time}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-danger remove-btn rounded-pill" data-symbol="${symbol}">
+                            <i class="bi bi-trash me-1"></i>删除
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            // 添加删除按钮事件
+            document.querySelectorAll('.remove-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const symbol = this.getAttribute('data-symbol');
+                    const index = watchlist.indexOf(symbol);
+                    if (index !== -1) {
+                        watchlist.splice(index, 1);
+                        localStorage.setItem('watchlist', JSON.stringify(watchlist));
+                        updateWatchlistTable(watchlist);
+                        showToast('股票已从自选列表中删除');
+                    }
+                });
+            });
+        }
+        
+        // 简单的哈希函数，用于生成模拟数据
+        function hashCode(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Convert to 32bit integer
+            }
+            return Math.abs(hash);
+        }
+        
+        // 显示Toast提示
+        function showToast(message, type = 'success') {
+            // 更新Toast内容和样式
+            const toast = document.getElementById('successToast');
+            const toastMessage = document.getElementById('toast-message');
+            
+            // 清除原有样式
+            toast.classList.remove('bg-success', 'bg-danger', 'bg-warning');
+            
+            // 添加新样式
+            if (type === 'success') {
+                toast.classList.add('bg-success');
+            } else if (type === 'danger') {
+                toast.classList.add('bg-danger');
+            } else if (type === 'warning') {
+                toast.classList.add('bg-warning', 'text-dark');
+            }
+            
+            // 设置消息内容
+            toastMessage.textContent = message;
+            
+            // 显示Toast
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+        }
+    </script>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4 mb-lg-0">
+                    <a href="/" class="footer-logo">量化交易系统</a>
+                    <p class="footer-description">
+                        专业的个人量化交易平台，提供智能策略构建、自动化执行和实时监控，帮助您实现交易自动化和资产增值。
+                    </p>
+                    <div class="social-icons">
+                        <a href="#"><i class="bi bi-github"></i></a>
+                        <a href="#"><i class="bi bi-twitter"></i></a>
+                        <a href="#"><i class="bi bi-linkedin"></i></a>
+                        <a href="#"><i class="bi bi-envelope"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6 mb-4 mb-md-0">
+                    <h5>功能导航</h5>
+                    <ul class="footer-links">
+                        <li><a href="/">首页</a></li>
+                        <li><a href="/market">市场概览</a></li>
+                        <li><a href="/watchlist">自选股</a></li>
+                        <li><a href="/backtest">策略回测</a></li>
+                        <li><a href="/trading">交易控制</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6 mb-4 mb-md-0">
+                    <h5>开发资源</h5>
+                    <ul class="footer-links">
+                        <li><a href="#">API文档</a></li>
+                        <li><a href="#">策略示例</a></li>
+                        <li><a href="#">开发指南</a></li>
+                        <li><a href="#">版本历史</a></li>
+                        <li><a href="#">常见问题</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 col-md-4">
+                    <h5>联系我们</h5>
+                    <ul class="footer-links">
+                        <li><i class="bi bi-envelope-fill me-2"></i> support@quant-trading.com</li>
+                        <li><i class="bi bi-telephone-fill me-2"></i> (021) 5678-9000</li>
+                        <li><i class="bi bi-geo-alt-fill me-2"></i> 上海市浦东新区张江高科技园区</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2023-2025 量化交易系统 | 版本 1.2.5 | 所有权利保留</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html> 

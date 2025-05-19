@@ -1,0 +1,989 @@
+/* 
+ * 量化交易系统 - 现代简约风格
+ * 设计理念：优雅、深度、平衡、精致
+ */
+
+:root {
+  /* 主色调 - 更新为用户指定的现代简约配色方案 */
+  --primary-color: #3a6ea5;      /* 蓝色 - 主要强调/文字 */
+  --primary-color-rgb: 58, 110, 165; /* RGB值用于rgba函数 */
+  --secondary-color: #778899;    /* 石板灰 - 次要强调/文字 */
+  --secondary-color-rgb: 119, 136, 153; /* RGB值用于rgba函数 */
+  --accent-color: #c8a8a4;       /* 玫瑰灰 - 点缀色 */
+  --accent-color-rgb: 200, 168, 164; /* RGB值用于rgba函数 */
+  
+  /* 背景色系 */
+  --bg-main: #f8f9fa;           /* 非常浅的灰 - 主背景色 */
+  --bg-card: #ffffff;           /* 纯白 - 卡片背景 */
+  --bg-header-footer: #f5f5f5;   /* 更浅的页眉页脚背景 */
+  --bg-navbar: #ffffff;         /* 导航栏背景 - 白色 */
+  
+  /* 文字色系 */
+  --text-dark: #626d71;          /* 烟蓝 - 主要文字 */
+  --text-medium: #778899;        /* 石板灰 - 次要文字 */
+  --text-light: #b9a99c;         /* 浅褐灰 - 用于浅色背景上的文字 */
+  --text-on-dark-bg: #f8fafc;    /* 最浅灰 - 用于深色背景 */
+
+  /* 状态色系 - 与新配色协调 */
+  --success: #8f9779;           /* 灰绿色 */
+  --success-rgb: 143, 151, 121;  /* RGB值用于rgba函数 */
+  --warning: #c8a8a4;           /* 玫瑰灰 */
+  --warning-rgb: 200, 168, 164;  /* RGB值用于rgba函数 */
+  --danger: #a67f7a;            /* 深玫瑰灰 */
+  --danger-rgb: 166, 127, 122;    /* RGB值用于rgba函数 */
+  --info: #778899;              /* 石板灰 */
+  --info-rgb: 119, 136, 153;     /* RGB值用于rgba函数 */
+  
+  /* 边框和阴影 - 极简化 */
+  --border-color: #e2e8f0;       /* 柔和边框 */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.03); /* 更轻的阴影 */
+  --shadow: 0 2px 4px rgba(0,0,0,0.04);  /* 更轻的阴影 */
+  --shadow-lg: 0 5px 15px rgba(0,0,0,0.05);/* 更轻的阴影 */
+  
+  /* 间距 */
+  --spacing-xs: 0.4rem;
+  --spacing-sm: 0.8rem;
+  --spacing-md: 1.25rem; 
+  --spacing-lg: 2.25rem;
+  --spacing-xl: 3.5rem;
+  
+  /* 圆角 - 减少以获得更清晰的现代感 */
+  --border-radius-sm: 2px;
+  --border-radius: 4px; 
+  --border-radius-lg: 8px;
+
+  /* 过渡 */
+  --transition-fast: 0.15s ease-in-out;
+  --transition: 0.25s ease-in-out;
+  --transition-slow: 0.4s ease-in-out;
+}
+
+/* 基础样式 */
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  font-family: "Inter", "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-dark);
+  line-height: 1.65; /* 调整行高以获得更好的可读性 */
+  font-size: 1rem; /* 使用rem单位, 16px default */
+  font-weight: 400;
+  letter-spacing: 0.0025em; 
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased; 
+  -moz-osx-font-smoothing: grayscale;
+  pointer-events: auto;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* 主内容包装器 */
+.main-content, .page-wrapper {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100vh; /* 修改为100vh以确保至少占满整个视口高度 */
+  overflow: visible;
+}
+
+.container.my-4 {
+  flex-grow: 1;
+  width: 100%;
+  padding-bottom: var(--spacing-xl);
+}
+
+/* 主要内容行 - 确保列能正确处理内部高度 */
+.row.g-4 {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  margin: 0;
+  min-height: 0; /* 防止最小高度限制导致内容被截断 */
+}
+
+.row.g-4 > [class*="col-"] {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.5rem; /* 确保列之间有足够间距 */
+}
+
+/* 导航栏 */
+.navbar {
+  background-color: var(--bg-navbar) !important; 
+  box-shadow: none; /* 移除阴影，采用边框 */
+  border-bottom: 1px solid var(--border-color); /* 用细线代替阴影 */
+  padding: 0.6rem 0; /* 调整内边距 */
+  position: sticky; 
+  top: 0;
+  z-index: 1020; 
+}
+
+.navbar::after {
+ display: none; /* 移除原有的伪元素边框，因为上面直接在.navbar上加了border-bottom */
+}
+
+.navbar-brand {
+  font-weight: 500; /* 可以略微加粗品牌名 */
+  letter-spacing: normal; 
+  color: var(--text-dark) !important; 
+  position: relative;
+  padding-left: 0; 
+}
+
+.navbar-brand::before {
+  display: none; /* 移除品牌名前的装饰条 */
+}
+
+/* Ensuring nav-link selectors are general enough for Bootstrap 5 structure */
+.navbar .navbar-nav .nav-link { 
+  color: var(--text-medium); 
+  padding: 0.5rem 1rem;
+  margin: 0 0.1rem; 
+  font-weight: 400; 
+  opacity: 1; 
+  transition: color var(--transition-fast), border-bottom-color var(--transition-fast);
+  border-radius: 0; /* 移除圆角，追求线条感 */
+  position: relative;
+  border-bottom: 2px solid transparent; /* 为 active 和 hover 状态准备空间 */
+}
+
+.navbar .navbar-nav .nav-link:hover {
+  color: var(--primary-color); 
+  background-color: transparent; 
+  border-bottom-color: var(--primary-color); /* hover时显示下划线 */
+}
+
+.navbar .navbar-nav .nav-link.active {
+  color: var(--primary-color); 
+  font-weight: 500; 
+  background-color: transparent;
+  border-bottom-color: var(--accent-color); /* active状态下划线使用点缀色 */
+}
+
+.navbar .navbar-nav .nav-link.active::after { 
+  display:none; /* 移除旧的::after元素下划线，因为我们现在用border-bottom */
+}
+
+/* 卡片样式 */
+.card {
+  background-color: var(--bg-card);
+  border: none;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  margin-bottom: var(--spacing-md); /* Standard margin for all cards */
+  transition: transform var(--transition), box-shadow var(--transition);
+  overflow: hidden;
+  display: flex; /* Make card a flex container */
+  flex-direction: column; /* Arrange card-header, card-body vertically */
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+.card-header {
+  background-color: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+  padding: var(--spacing-md) var(--spacing-md);
+  font-weight: 500;
+}
+
+.card-body {
+  padding: var(--spacing-md);
+  flex-grow: 1; /* Allow card-body to grow if card is flex container */
+}
+
+/* 按钮样式 */
+.btn {
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  padding: 0.6rem 1.5rem;
+  transition: all var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+  text-transform: none;
+}
+
+.btn::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%);
+  transform-origin: 50% 50%;
+}
+
+.btn:active::after {
+  opacity: 1;
+  transform: scale(80, 80) translate(-50%);
+  transition: all 0.4s;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  position: relative;
+}
+
+.btn-primary:hover {
+  background-color: var(--secondary-color);
+  border-color: var(--secondary-color);
+  transform: translateY(-1px);
+}
+
+.btn-outline-primary {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  transform: translateY(-1px);
+}
+
+.btn-success {
+  background-color: var(--success);
+  border-color: var(--success);
+}
+
+.btn-danger {
+  background-color: var(--danger);
+  border-color: var(--danger);
+}
+
+.btn-outline-secondary {
+  color: var(--secondary-color);
+  border-color: var(--secondary-color);
+}
+
+/* 表格样式 */
+.table {
+  color: var(--text-dark);
+  margin-bottom: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table thead th {
+  background-color: rgba(0,0,0,0.01);
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 600;
+  color: var(--text-medium);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  padding: 1rem;
+}
+
+.table tbody tr {
+  transition: background-color var(--transition-fast);
+}
+
+.table tbody tr:hover {
+  background-color: rgba(0,0,0,0.01);
+}
+
+.table td {
+  padding: 1rem;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.table-responsive {
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+/* 表单元素 */
+.form-control, .form-select {
+  border-color: var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 0.75rem 1rem;
+  background-color: rgba(255,255,255,0.8);
+  transition: all var(--transition-fast);
+  font-weight: 400;
+  color: var(--text-dark);
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.25rem rgba(44, 62, 80, 0.15);
+  background-color: #fff;
+}
+
+.form-label {
+  color: var(--text-medium);
+  font-weight: 500;
+  margin-bottom: var(--spacing-xs);
+  font-size: 0.85rem;
+}
+
+.form-check-input:checked {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.form-check-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.25rem rgba(44, 62, 80, 0.15);
+}
+
+/* 文本颜色 */
+.text-success {
+  color: var(--success) !important;
+}
+
+.text-danger {
+  color: var(--danger) !important;
+}
+
+.text-info {
+  color: var(--info) !important;
+}
+
+.text-warning {
+  color: var(--warning) !important;
+}
+
+.text-muted {
+  color: var(--text-medium) !important;
+}
+
+/* 徽章 */
+.badge {
+  font-weight: 500;
+  padding: 0.4em 0.85em;
+  border-radius: 50rem;
+  letter-spacing: 0.03em;
+  font-size: 0.75em;
+}
+
+.bg-success {
+  background-color: var(--success) !important;
+}
+
+.bg-danger {
+  background-color: var(--danger) !important;
+}
+
+.bg-secondary {
+  background-color: var(--secondary-color) !important;
+}
+
+/* 页脚 */
+footer {
+  background-color: var(--bg-header-footer);
+  padding: var(--spacing-lg) 0;
+  color: var(--text-medium);
+  border-top: 1px solid var(--border-color);
+  width: 100%;
+  flex-shrink: 0; /* 防止页脚在flex布局中收缩 */
+  margin-top: var(--spacing-xl); /* Give a decent default top margin */
+  /* margin-top: auto; */ /* Alternative: pushes to bottom if content is very short */
+}
+
+footer .footer-logo {
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+  display: inline-block;
+}
+
+footer .footer-description {
+  color: var(--text-medium);
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+footer h5 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 1.2rem;
+}
+
+footer .footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+footer .footer-links li {
+  margin-bottom: 0.7rem;
+}
+
+footer .footer-links a {
+  color: var(--text-medium);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  font-size: 0.9rem;
+}
+
+footer .footer-links a:hover {
+  color: var(--primary-color);
+}
+
+footer .footer-bottom {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+footer .social-icons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+footer .social-icons a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: rgba(var(--primary-color-rgb), 0.1);
+  color: var(--primary-color);
+  transition: all 0.3s ease;
+}
+
+footer .social-icons a:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* 模态框 */
+.modal-content {
+  border: none;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--border-color);
+  padding: var(--spacing-md);
+  background-color: var(--bg-card);
+}
+
+.modal-footer {
+  border-top: 1px solid var(--border-color);
+  padding: var(--spacing-md);
+  background-color: var(--bg-card);
+}
+
+/* 列表组 */
+.list-group-item {
+  border-color: var(--border-color);
+  padding: var(--spacing-md);
+  background-color: var(--bg-card);
+  transition: all var(--transition-fast);
+}
+
+.list-group-item:hover {
+  background-color: rgba(0,0,0,0.01);
+}
+
+.list-group-item.active {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: var(--text-light);
+}
+
+/* 警告框 */
+.alert {
+  border: none;
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-sm);
+}
+
+/* 标签页 */
+.nav-tabs {
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: var(--spacing-md);
+}
+
+.nav-tabs .nav-link {
+  border: none;
+  color: var(--text-medium);
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+  margin-right: 0.25rem;
+  position: relative;
+}
+
+.nav-tabs .nav-link:hover {
+  color: var(--primary-color);
+  border: none;
+  background: transparent;
+}
+
+.nav-tabs .nav-link.active {
+  color: var(--primary-color);
+  font-weight: 600;
+  background: transparent;
+  border: none;
+}
+
+.nav-tabs .nav-link.active::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--primary-color);
+  border-radius: 2px 2px 0 0;
+}
+
+.tab-content {
+  padding: var(--spacing-sm) 0;
+}
+
+/* 图表容器 */
+.chart-container {
+  background-color: var(--bg-card);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+  height: 350px;
+}
+
+/* 卡片容器 */
+.dashboard-card {
+  height: auto; /* 改为auto以适应内容高度 */
+  min-height: 100px; /* 设置最小高度 */
+  display: flex; 
+  flex-direction: column; 
+  transition: all 0.3s ease;
+  border: none;
+  border-radius: var(--border-radius);
+  overflow: visible; /* 改为visible确保内容不被截断 */
+  box-shadow: var(--shadow);
+  margin-bottom: 1.5rem; 
+}
+
+.dashboard-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+}
+
+.dashboard-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(135deg, transparent 75%, rgba(255, 255, 255, 0.05) 100%);
+  border-radius: 0 var(--border-radius) 0 100%;
+  pointer-events: none;
+}
+
+.dashboard-card .card-body {
+  flex-grow: 1; /* 让卡片内容区域填充可用空间 */
+  overflow: visible; /* 改为visible防止内容被截断 */
+}
+
+.card.dashboard-card .card-body.table-scroll {
+  max-height: 260px;
+  overflow: auto; /* 只有特定需要滚动的区域保持auto */
+}
+
+/* 禅意风格装饰元素 - 改进为现代元素 */
+.divider {
+  border: none;
+  height: 1px;
+  background: linear-gradient(to right, rgba(0,0,0,0), rgba(0,0,0,0.1), rgba(0,0,0,0));
+  margin: var(--spacing-lg) auto;
+  width: 80%;
+  position: relative;
+}
+
+.divider::after {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: var(--accent-color);
+  border-radius: 50%;
+  top: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* 非对称布局元素 */
+.asymmetric-container {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--spacing-md);
+  margin: var(--spacing-md) 0;
+}
+
+@media (max-width: 992px) {
+  .asymmetric-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 数据卡片 */
+.data-card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-card);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow);
+  transition: all var(--transition);
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+}
+
+.data-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+}
+
+.data-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+}
+
+.data-card-title {
+  font-weight: 600;
+  margin: 0;
+  font-size: 1rem;
+}
+
+.data-card-value {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: auto 0;
+}
+
+.data-card-footer {
+  margin-top: auto;
+  font-size: 0.875rem;
+  color: var(--text-medium);
+}
+
+/* 美化的进度条 */
+.progress {
+  height: 0.5rem;
+  background-color: rgba(0,0,0,0.05);
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.progress-bar {
+  border-radius: 1rem;
+  transition: width var(--transition);
+}
+
+/* 信息展示项 */
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--spacing-xs) 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.info-item:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  color: var(--text-medium);
+  font-weight: 500;
+}
+
+.info-value {
+  font-weight: 500;
+}
+
+/* 气泡标签 */
+.bubble-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35em 0.75em;
+  background-color: rgba(0,0,0,0.05);
+  border-radius: 50rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-medium);
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+  transition: all var(--transition-fast);
+}
+
+.bubble-tag:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.bubble-tag i {
+  margin-right: 0.35em;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  :root {
+    --spacing-md: 1.5rem;
+    --spacing-lg: 2rem;
+    --spacing-xl: 3rem;
+  }
+  
+  .card-body {
+    padding: var(--spacing-sm);
+  }
+
+  .navbar-dark .navbar-nav .nav-link {
+    padding: 0.5rem 0;
+    margin: 0.25rem 0;
+  }
+  
+  .navbar-dark .navbar-nav .nav-link.active::after {
+    width: 30px;
+  }
+  
+  .data-card-value {
+    font-size: 1.5rem;
+  }
+}
+
+/* 通用阴影类 */
+.shadow-hover {
+  transition: all var(--transition);
+}
+
+.shadow-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* 美化的滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.02);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.15);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0,0,0,0.25);
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.fade-in-delay-1 {
+  animation: fadeIn 0.5s ease 0.1s forwards;
+  opacity: 0;
+}
+
+.fade-in-delay-2 {
+  animation: fadeIn 0.5s ease 0.2s forwards;
+  opacity: 0;
+}
+
+.fade-in-delay-3 {
+  animation: fadeIn 0.5s ease 0.3s forwards;
+  opacity: 0;
+}
+
+/* 悬停效果 */
+.hover-lift {
+  transition: transform var(--transition-fast);
+}
+
+.hover-lift:hover {
+  transform: translateY(-3px);
+}
+
+/* 统计指标卡片 */
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-card);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 100%;
+  background-color: var(--primary-color);
+  opacity: 0.5;
+}
+
+.stat-card.success::before {
+  background-color: var(--success);
+}
+
+.stat-card.warning::before {
+  background-color: var(--warning);
+}
+
+.stat-card.danger::before {
+  background-color: var(--danger);
+}
+
+.stat-card.info::before {
+  background-color: var(--info);
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: var(--text-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* 图标 */
+.icon-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(0,0,0,0.05);
+  color: var(--text-medium);
+  transition: all var(--transition-fast);
+}
+
+.icon-circle:hover {
+  background-color: var(--primary-color);
+  color: white;
+  transform: scale(1.1);
+}
+
+/* 页面标题 */
+.page-title {
+  margin-bottom: var(--spacing-lg);
+  position: relative;
+}
+
+.page-title h2 {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.page-title p {
+  color: var(--text-medium);
+  margin-bottom: 0;
+}
+
+/* 创建图表容器 */
+.chart-container-modern {
+  position: relative;
+  background-color: var(--bg-card);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  padding: var(--spacing-md);
+  height: 350px;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+}
+
+.chart-title h5 {
+  margin-bottom: 0;
+  font-weight: 600;
+}
+
+.chart-wrapper {
+  flex: 1;
+  position: relative;
+}
+
+/* 图表控件 */
+.chart-controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-xs);
+}
+
+.chart-controls .form-select {
+  font-size: 0.875rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--border-radius-sm);
+}
+
+.page-wrapper, .main-content {
+  min-height: auto;
+  overflow: visible;
+}
+
+.card.dashboard-card .card-body {
+  max-height: 350px;
+  overflow: auto;
+} 

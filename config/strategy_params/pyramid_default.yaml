@@ -1,0 +1,26 @@
+# Default parameters for the Pyramid LLM Strategy
+
+# General Strategy Settings
+strategy_name: "PyramidLLM_Default"
+base_symbol: "000001.SH" # Default symbol to trade
+
+# Pyramid Logic Parameters
+initial_position_ratio: 0.01 # e.g., 1% of portfolio value for initial trade
+max_pyramid_levels: 5        # Maximum number of times to add to a winning position
+add_position_threshold_pct: 0.02 # e.g., Add to position if price moves 2% in favor
+add_position_increment_ratio: 0.005 # e.g., Add 0.5% of portfolio value for each increment
+
+# Stop Loss / Take Profit (can be dynamic or based on LLM signals too)
+stop_loss_pct: 0.05          # e.g., 5% stop loss from entry or last add
+take_profit_pct: 0.15        # e.g., 15% take profit target
+
+# LLM Signal Integration
+llm_signal_confidence_threshold: 0.6 # Minimum confidence from LLM to consider a signal
+use_llm_for_entry: true
+use_llm_for_exit: false # Example: exits might be purely technical or risk-based
+use_llm_for_pyramiding: true
+
+# Timeframes and Data
+primary_timeframe: "1d" # Primary K-line timeframe for analysis (e.g., 1d, 1h, 15m)
+secondary_timeframe: "1h" # Optional secondary timeframe
+lookback_period_days: 90 # Days of historical data to consider for LLM context / TA 
