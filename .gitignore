@@ -53,3 +53,4 @@ __pycache__/
 data/backup/
 output/cache/
 output/data/cache/
+.nvm*.Zone.Identifier
